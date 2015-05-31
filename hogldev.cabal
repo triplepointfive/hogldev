@@ -1,0 +1,34 @@
+name:                hogldev
+version:             0.1.0.0
+synopsis:            OpenGL, Graphics
+license:             MIT
+license-file:        LICENSE
+author:              Ilya Smelkov
+maintainer:          triplepointfive@gmail.com
+category:            Graphics
+build-type:          Simple
+cabal-version:       >=1.10
+
+executable tutorial01
+  main-is:             Tutorial01.hs
+  build-depends:       base >=4.6 && <4.9
+                     , GLUT
+                     , OpenGL
+  hs-source-dirs:      tutorial01/
+  default-language:    Haskell2010
+
+executable tutorial02
+  main-is:             Tutorial02.hs
+  build-depends:       base >=4.6 && <4.9
+                     , GLUT
+                     , OpenGL
+  hs-source-dirs:      tutorial02/
+  default-language:    Haskell2010
+
+executable tutorial03
+  main-is:             Tutorial03.hs
+  build-depends:       base >=4.6 && <4.9
+                     , GLUT
+                     , OpenGL
+  hs-source-dirs:      tutorial03/
+  default-language:    Haskell2010
