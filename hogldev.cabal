@@ -32,3 +32,11 @@ executable tutorial03
                      , OpenGL
   hs-source-dirs:      tutorial03/
   default-language:    Haskell2010
+
+executable tutorial04
+  main-is:             Tutorial04.hs
+  build-depends:       base >=4.6 && <4.9
+                     , GLUT
+                     , OpenGL
+  hs-source-dirs:      tutorial04/
+  default-language:    Haskell2010
