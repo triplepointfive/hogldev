@@ -78,6 +78,16 @@ executable tutorial07
   hs-source-dirs:      tutorial07/
   default-language:    Haskell2010
 
+executable tutorial08
+  main-is:             Tutorial08.hs
+  build-depends:       base >=4.6 && <4.9
+                     , GLUT
+                     , OpenGL
+                     , GLUtil
+                     , hogldev
+  hs-source-dirs:      tutorial08/
+  default-language:    Haskell2010
+
 source-repository head
   type:     git
   location: git://github.com/triplepointfive/hogldev

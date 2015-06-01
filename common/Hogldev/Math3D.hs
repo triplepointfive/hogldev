@@ -2,6 +2,7 @@ module Hogldev.Math3D (
     Matrix4
   , translateMatrix
   , rotateZMatrix
+  , scaleMatrix
 ) where
 
 import           Graphics.Rendering.OpenGL
@@ -28,4 +29,16 @@ rotateZMatrix a =
         , sin a,   cos a, 0, 0
         ,     0,       0, 1, 0
         ,     0,       0, 0, 1
+        ]
+
+scaleMatrix :: GLfloat
+            -> GLfloat
+            -> GLfloat
+            -> IO Matrix4
+scaleMatrix x y z =
+    newMatrix ColumnMajor
+        [ x, 0, 0, 0
+        , 0, y, 0, 0
+        , 0, 0, z, 0
+        , 0, 0, 0, 1
         ]
