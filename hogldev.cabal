@@ -1,5 +1,6 @@
 name:                hogldev
 version:             0.1.0.0
+description:         The port of ogldev's tutorials
 synopsis:            OpenGL, Graphics
 license:             MIT
 license-file:        LICENSE
@@ -8,6 +9,14 @@ maintainer:          triplepointfive@gmail.com
 category:            Graphics
 build-type:          Simple
 cabal-version:       >=1.10
+
+library
+  hs-source-dirs:      common/Hogldev
+                     , common
+  exposed-modules:     Hogldev.Math3D
+  build-depends:       base >=4.6 && <4.9
+                     , OpenGL
+  default-language:    Haskell2010
 
 executable tutorial01
   main-is:             Tutorial01.hs
@@ -48,3 +57,27 @@ executable tutorial05
                      , OpenGL
   hs-source-dirs:      tutorial05/
   default-language:    Haskell2010
+
+executable tutorial06
+  main-is:             Tutorial06.hs
+  build-depends:       base >=4.6 && <4.9
+                     , GLUT
+                     , OpenGL
+                     , GLUtil
+                     , hogldev
+  hs-source-dirs:      tutorial06/
+  default-language:    Haskell2010
+
+executable tutorial07
+  main-is:             Tutorial07.hs
+  build-depends:       base >=4.6 && <4.9
+                     , GLUT
+                     , OpenGL
+                     , GLUtil
+                     , hogldev
+  hs-source-dirs:      tutorial07/
+  default-language:    Haskell2010
+
+source-repository head
+  type:     git
+  location: git://github.com/triplepointfive/hogldev
