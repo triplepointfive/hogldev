@@ -1,6 +1,7 @@
 module Hogldev.Math3D (
     Matrix4
   , translateMatrix
+  , rotateYMatrix
   , rotateZMatrix
   , scaleMatrix
 ) where
@@ -29,6 +30,16 @@ rotateZMatrix a =
         , sin a,   cos a, 0, 0
         ,     0,       0, 1, 0
         ,     0,       0, 0, 1
+        ]
+
+rotateYMatrix :: GLfloat
+              -> IO Matrix4
+rotateYMatrix a =
+    newMatrix ColumnMajor
+        [ cos a, 0, - sin a, 0
+        ,     0, 1,       0, 0
+        , sin a, 0,   cos a, 0
+        ,     0, 0,       0, 1
         ]
 
 scaleMatrix :: GLfloat
