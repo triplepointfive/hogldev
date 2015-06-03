@@ -10,7 +10,7 @@ import           Foreign.Ptr
 import           Foreign.Storable (sizeOf)
 import           System.Exit (exitFailure)
 
-import           Hogldev.Math3D (rotateYMatrix)
+import           Hogldev.Pipeline (Pipeline(..), getTrans)
 
 bufferOffset :: Integral a => a -> Ptr b
 bufferOffset = plusPtr nullPtr . fromIntegral
@@ -50,7 +50,7 @@ main = do
     initialDisplayMode $= [DoubleBuffered, RGBAMode]
     initialWindowSize $= Size 1024 768
     initialWindowPosition $= Position 100 100
-    createWindow "Tutorial 10"
+    createWindow "Tutorial 11"
 
     vbo <- createVertexBuffer
     ibo <- createIndexBuffer
@@ -73,7 +73,7 @@ initializeGlutCallbacks vbo ibo gWorldLocation gScale = do
 
 idleCB :: IORef GLfloat -> IdleCallback
 idleCB gScale = do
-  gScale $~! (+ 0.01)
+  gScale $~! (+ 0.001)
   postRedisplay Nothing
 
 createVertexBuffer :: IO BufferObject
@@ -156,7 +156,16 @@ renderSceneCB vbo ibo gWorldLocation gScale = do
     clear [ColorBuffer]
     gScaleVal <- readIORef gScale
 
-    uniformMat gWorldLocation $= rotateYMatrix gScaleVal
+    uniformMat gWorldLocation $= getTrans
+        ( Pipeline
+            (Vector3 (sin (gScaleVal * 0.1))
+                     (sin (gScaleVal * 0.1))
+                     (sin (gScaleVal * 0.1)))
+            (Vector3 (sin gScaleVal) 0 0)
+            (Vector3 (sin (gScaleVal) * 90)
+                     (sin (gScaleVal) * 90)
+                     (sin (gScaleVal) * 90))
+        )
 
     vertexAttribArray vPosition $= Enabled
     bindBuffer ArrayBuffer $= Just vbo

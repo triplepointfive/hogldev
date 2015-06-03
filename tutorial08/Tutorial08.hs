@@ -130,9 +130,8 @@ renderSceneCB vbo gWorldLocation gScale = do
     clear [ColorBuffer]
     gScaleVal <- readIORef gScale
 
-    gWorld <- scaleMatrix (sin gScaleVal) (cos gScaleVal) (sin gScaleVal)
-
-    uniformGLMat4 gWorldLocation $= gWorld
+    uniformMat gWorldLocation $=
+        scaleMatrix (Vector3 (sin gScaleVal) (cos gScaleVal) (sin gScaleVal))
 
     vertexAttribArray vPosition $= Enabled
     bindBuffer ArrayBuffer $= Just vbo

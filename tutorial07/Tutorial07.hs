@@ -130,9 +130,7 @@ renderSceneCB vbo gWorldLocation gScale = do
     clear [ColorBuffer]
     gScaleVal <- readIORef gScale
 
-    gWorld <- rotateZMatrix gScaleVal
-
-    uniformGLMat4 gWorldLocation $= gWorld
+    uniformMat gWorldLocation $= rotateZMatrix gScaleVal
 
     vertexAttribArray vPosition $= Enabled
     bindBuffer ArrayBuffer $= Just vbo
