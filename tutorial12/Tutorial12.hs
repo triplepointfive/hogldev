@@ -9,7 +9,7 @@ import           Foreign.Marshal.Array (withArray)
 import           Foreign.Storable (sizeOf)
 import           System.Exit (exitFailure)
 
-import           Hogldev.Pipeline (Pipeline(..), getWPTrans, initPipeline)
+import           Hogldev.Pipeline (Pipeline(..), getTrans)
 import           Hogldev.Utils (PersProj(..), bufferOffset)
 
 windowWidth = 1024
@@ -164,9 +164,10 @@ renderSceneCB vbo ibo gWorldLocation gScale = do
     clear [ColorBuffer]
     gScaleVal <- readIORef gScale
 
-    uniformMat gWorldLocation $= getWPTrans
-        ( initPipeline {
-            worldPos   = Vector3 0 0 5,
+    uniformMat gWorldLocation $= getTrans
+        ( WPPipeline {
+            worldInfo   = Vector3 0 0 5,
+            scaleInfo  = Vector3 1 1 1,
             rotateInfo = Vector3 0 gScaleVal 0,
             persProj   = persProjection
             }

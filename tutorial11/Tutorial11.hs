@@ -10,7 +10,7 @@ import           Foreign.Ptr
 import           Foreign.Storable (sizeOf)
 import           System.Exit (exitFailure)
 
-import           Hogldev.Pipeline (Pipeline(..), getWorldTrans, initPipeline)
+import           Hogldev.Pipeline (Pipeline(..), getTrans)
 import           Hogldev.Utils (bufferOffset)
 
 vertexShader = unlines
@@ -154,12 +154,12 @@ renderSceneCB vbo ibo gWorldLocation gScale = do
     clear [ColorBuffer]
     gScaleVal <- readIORef gScale
 
-    uniformMat gWorldLocation $= getWorldTrans
-        ( initPipeline {
+    uniformMat gWorldLocation $= getTrans
+        ( WPipeline {
             scaleInfo = Vector3 (sin (gScaleVal * 0.1))
                      (sin (gScaleVal * 0.1))
                      (sin (gScaleVal * 0.1)),
-            worldPos = Vector3 (sin gScaleVal) 0 0,
+            worldInfo = Vector3 (sin gScaleVal) 0 0,
             rotateInfo = Vector3 (sin gScaleVal * 90)
                      (sin gScaleVal * 90)
                      (sin gScaleVal * 90)
