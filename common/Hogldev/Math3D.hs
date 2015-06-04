@@ -1,3 +1,4 @@
+{-# LANGUAGE RecordWildCards #-}
 module Hogldev.Math3D (
     Matrix4
   , translateMatrix
@@ -5,12 +6,15 @@ module Hogldev.Math3D (
   , rotateYMatrix
   , rotateXMatrix
   , scaleMatrix
+  , perspectiveProj
   , (!*!)
 ) where
 
 import           Graphics.Rendering.OpenGL
 
 import           Data.List
+
+import           Hogldev.Utils
 
 type Matrix4 = [[GLfloat]]
 
@@ -59,3 +63,26 @@ scaleMatrix (Vector3 x y z) =
     , [ 0, 0, 0, 1]
     ]
 
+perspectiveProj :: PersProj -> Matrix4
+perspectiveProj PersProj{..} =
+    [ [ 1 / (tanHalfFOV * ar)
+      , 0
+      , 0
+      , 0]
+    , [ 0
+      , 1 / tanHalfFOV
+      , 0
+      , 0]
+    , [ 0
+      , 0
+      , (-persZNear - persZFar) / zRange
+      , 2 * persZFar * persZNear / zRange]
+    , [ 0
+      , 0
+      , 1
+      , 0]
+    ]
+  where
+    ar = persWidth / persHeigh
+    zRange = persZNear - persZFar
+    tanHalfFOV = tan (toRadian(persFOV / 2))

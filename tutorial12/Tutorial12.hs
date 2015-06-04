@@ -6,14 +6,22 @@ import           Graphics.Rendering.OpenGL
 import           Graphics.GLUtil
 import           Graphics.UI.GLUT hiding (exit)
 import           Foreign.Marshal.Array (withArray)
-import           Foreign.Ptr
 import           Foreign.Storable (sizeOf)
 import           System.Exit (exitFailure)
 
-import           Hogldev.Pipeline (Pipeline(..), getWorldTrans, initPipeline)
+import           Hogldev.Pipeline (Pipeline(..), getWPTrans, initPipeline)
+import           Hogldev.Utils (PersProj(..), bufferOffset)
 
-bufferOffset :: Integral a => a -> Ptr b
-bufferOffset = plusPtr nullPtr . fromIntegral
+windowWidth = 1024
+windowHeight = 768
+
+persProjection = PersProj
+                 { persFOV   = 30
+                 , persWidth = fromIntegral windowWidth
+                 , persHeigh = fromIntegral windowHeight
+                 , persZNear = 1
+                 , persZFar  = 1000
+                 }
 
 vertexShader = unlines
     [ "#version 330"
@@ -48,9 +56,9 @@ main :: IO ()
 main = do
     getArgsAndInitialize
     initialDisplayMode $= [DoubleBuffered, RGBAMode]
-    initialWindowSize $= Size 1024 768
+    initialWindowSize $= Size windowWidth windowHeight
     initialWindowPosition $= Position 100 100
-    createWindow "Tutorial 11"
+    createWindow "Tutorial 12"
 
     vbo <- createVertexBuffer
     ibo <- createIndexBuffer
@@ -73,7 +81,7 @@ initializeGlutCallbacks vbo ibo gWorldLocation gScale = do
 
 idleCB :: IORef GLfloat -> IdleCallback
 idleCB gScale = do
-  gScale $~! (+ 0.001)
+  gScale $~! (+ 0.1)
   postRedisplay Nothing
 
 createVertexBuffer :: IO BufferObject
@@ -156,15 +164,11 @@ renderSceneCB vbo ibo gWorldLocation gScale = do
     clear [ColorBuffer]
     gScaleVal <- readIORef gScale
 
-    uniformMat gWorldLocation $= getWorldTrans
+    uniformMat gWorldLocation $= getWPTrans
         ( initPipeline {
-            scaleInfo = (Vector3 (sin (gScaleVal * 0.1))
-                     (sin (gScaleVal * 0.1))
-                     (sin (gScaleVal * 0.1))),
-            worldPos = (Vector3 (sin gScaleVal) 0 0),
-            rotateInfo =(Vector3 (sin (gScaleVal) * 90)
-                     (sin (gScaleVal) * 90)
-                     (sin (gScaleVal) * 90))
+            worldPos   = (Vector3 0 0 5),
+            rotateInfo = (Vector3 0 gScaleVal 0),
+            persProj   = persProjection
             }
         )
 

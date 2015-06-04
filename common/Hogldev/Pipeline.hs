@@ -2,7 +2,9 @@
 module Hogldev.Pipeline (
     Pipeline(..)
   , initPipeline
-  , getTrans
+  , getWorldTrans
+  , getWPTrans
+  , PersProj(..)
 ) where
 
 import           Graphics.Rendering.OpenGL
@@ -11,22 +13,34 @@ import           Hogldev.Math3D
 import           Hogldev.Utils
 
 data Pipeline = Pipeline
-                { scale      :: Vector3 GLfloat
+                { scaleInfo  :: Vector3 GLfloat
                 , worldPos   :: Vector3 GLfloat
                 , rotateInfo :: Vector3 GLfloat
+                , persProj   :: PersProj
                 }
 
 initPipeline :: Pipeline
-initPipeline = Pipeline (Vector3 1 1 1) (Vector3 0 0 0) (Vector3 0 0 0)
+initPipeline =
+    Pipeline
+        (Vector3 1 1 1)
+        (Vector3 0 0 0)
+        (Vector3 0 0 0)
+        (PersProj 0 0 0 0 0)
 
-getTrans :: Pipeline -> Matrix4
-getTrans Pipeline{..} = do
+getWorldTrans :: Pipeline -> Matrix4
+getWorldTrans Pipeline{..} =
     translationTrans !*! rotateTrans !*! scaleTrans
   where
     scaleTrans, rotateTrans, translationTrans :: Matrix4
-    scaleTrans       = scaleMatrix scale
+    scaleTrans       = scaleMatrix scaleInfo
     rotateTrans      = initRotateTransform rotateInfo
     translationTrans = translateMatrix worldPos
+
+getWPTrans :: Pipeline -> Matrix4
+getWPTrans p@Pipeline{..} = persProjTrans !*! getWorldTrans p
+  where
+    persProjTrans :: Matrix4
+    persProjTrans = perspectiveProj persProj
 
 initRotateTransform :: Vector3 GLfloat -> Matrix4
 initRotateTransform (Vector3 x y z) = rz !*! ry !*! rx
