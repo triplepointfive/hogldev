@@ -166,8 +166,8 @@ renderSceneCB vbo ibo gWorldLocation gScale = do
 
     uniformMat gWorldLocation $= getWPTrans
         ( initPipeline {
-            worldPos   = (Vector3 0 0 5),
-            rotateInfo = (Vector3 0 gScaleVal 0),
+            worldPos   = Vector3 0 0 5,
+            rotateInfo = Vector3 0 gScaleVal 0,
             persProj   = persProjection
             }
         )

@@ -21,7 +21,7 @@ type Matrix4 = [[GLfloat]]
 infixl 7 !*!
 
 (!*!) :: Matrix4 -> Matrix4 -> Matrix4
-(!*!) a b = [ [ sum $ zipWith (*) ar bc | bc <- (transpose b) ] | ar <- a ]
+(!*!) a b = [ [ sum $ zipWith (*) ar bc | bc <- transpose b ] | ar <- a ]
 
 translateMatrix :: Vector3 GLfloat -> Matrix4
 translateMatrix (Vector3 x y z) =

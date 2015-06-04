@@ -156,13 +156,13 @@ renderSceneCB vbo ibo gWorldLocation gScale = do
 
     uniformMat gWorldLocation $= getWorldTrans
         ( initPipeline {
-            scaleInfo = (Vector3 (sin (gScaleVal * 0.1))
+            scaleInfo = Vector3 (sin (gScaleVal * 0.1))
                      (sin (gScaleVal * 0.1))
-                     (sin (gScaleVal * 0.1))),
-            worldPos = (Vector3 (sin gScaleVal) 0 0),
-            rotateInfo =(Vector3 (sin (gScaleVal) * 90)
-                     (sin (gScaleVal) * 90)
-                     (sin (gScaleVal) * 90))
+                     (sin (gScaleVal * 0.1)),
+            worldPos = Vector3 (sin gScaleVal) 0 0,
+            rotateInfo = Vector3 (sin gScaleVal * 90)
+                     (sin gScaleVal * 90)
+                     (sin gScaleVal * 90)
             }
         )
 
