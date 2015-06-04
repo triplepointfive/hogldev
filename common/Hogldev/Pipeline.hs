@@ -3,6 +3,7 @@ module Hogldev.Pipeline (
     Pipeline(..)
   , getTrans
   , PersProj(..)
+  , Camera(..)
 ) where
 
 import           Graphics.Rendering.OpenGL
@@ -22,12 +23,19 @@ data Pipeline =
         , rotateInfo :: Vector3 GLfloat
         , persProj   :: PersProj
         }
---    WVPPipeline
+    | WVPPipeline
+        { scaleInfo  :: Vector3 GLfloat
+        , worldInfo  :: Vector3 GLfloat
+        , rotateInfo :: Vector3 GLfloat
+        , persProj   :: PersProj
+        , pipeCamera :: Camera
+        }
 
 getTrans :: Pipeline -> Matrix4
-getTrans WPipeline{..} = worldTrans scaleInfo worldInfo rotateInfo
-getTrans WPPipeline{..} =
-    perspectiveProj persProj !*! worldTrans scaleInfo worldInfo rotateInfo
+getTrans WPipeline{..}   = worldTrans scaleInfo worldInfo rotateInfo
+getTrans WPPipeline{..}  = projTrans scaleInfo worldInfo rotateInfo persProj
+getTrans WVPPipeline{..} =
+    projViewTrans scaleInfo worldInfo rotateInfo persProj pipeCamera
 
 worldTrans :: Vector3 GLfloat
            -> Vector3 GLfloat
@@ -40,6 +48,29 @@ worldTrans scaleInfo worldInfo rotateInfo =
     scaleTrans       = scaleMatrix scaleInfo
     rotateTrans      = initRotateTransform rotateInfo
     translationTrans = translateMatrix worldInfo
+
+projTrans :: Vector3 GLfloat
+          -> Vector3 GLfloat
+          -> Vector3 GLfloat
+          -> PersProj
+          -> Matrix4
+projTrans scaleInfo worldInfo rotateInfo persProj =
+    perspProjTrans persProj !*! worldTrans scaleInfo worldInfo rotateInfo
+
+projViewTrans :: Vector3 GLfloat
+              -> Vector3 GLfloat
+              -> Vector3 GLfloat
+              -> PersProj
+              -> Camera
+              -> Matrix4
+projViewTrans scaleInfo worldInfo rotateInfo persProj camera =
+    perspProjTrans persProj
+        !*! cameraTrans camera
+        !*! worldTrans scaleInfo worldInfo rotateInfo
+
+cameraTrans :: Camera -> Matrix4
+cameraTrans c@Camera{..} =
+    cameraRotationTrans c !*! translateMatrix (fmap (*(-1) ) cameraPos)
 
 initRotateTransform :: Vector3 GLfloat -> Matrix4
 initRotateTransform (Vector3 x y z) = rz !*! ry !*! rx

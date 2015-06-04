@@ -3,6 +3,7 @@ module Hogldev.Utils (
   , toDegree
   , bufferOffset
   , PersProj(..)
+  , Camera(..)
 ) where
 
 import           Graphics.Rendering.OpenGL
@@ -18,6 +19,12 @@ data PersProj = PersProj
                 , persZNear :: !GLfloat
                 , persZFar  :: !GLfloat
                 }
+
+data Camera = Camera
+              { cameraPos    :: !(Vector3 GLfloat)
+              , cameraTarget :: !(Vector3 GLfloat)
+              , cameraUp     :: !(Vector3 GLfloat)
+              }
 
 toRadian :: (Floating a, Num a) => a -> a
 toRadian x = x * pi / 180

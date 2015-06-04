@@ -6,7 +6,8 @@ module Hogldev.Math3D (
   , rotateYMatrix
   , rotateXMatrix
   , scaleMatrix
-  , perspectiveProj
+  , perspProjTrans
+  , cameraRotationTrans
   , (!*!)
 ) where
 
@@ -63,8 +64,8 @@ scaleMatrix (Vector3 x y z) =
     , [ 0, 0, 0, 1]
     ]
 
-perspectiveProj :: PersProj -> Matrix4
-perspectiveProj PersProj{..} =
+perspProjTrans :: PersProj -> Matrix4
+perspProjTrans PersProj{..} =
     [ [ 1 / (tanHalfFOV * ar)
       , 0
       , 0
@@ -86,3 +87,28 @@ perspectiveProj PersProj{..} =
     ar = persWidth / persHeigh
     zRange = persZNear - persZFar
     tanHalfFOV = tan (toRadian(persFOV / 2))
+
+cameraRotationTrans :: Camera -> Matrix4
+cameraRotationTrans Camera{..} =
+    [ [ ux, uy, uz, 0]
+    , [ vx, vy, vz, 0]
+    , [ nx, ny, nz, 0]
+    , [  0,  0,  0, 1]
+    ]
+  where
+    n@(Vector3 nx ny nz) = normalizeVector cameraTarget
+    u@(Vector3 ux uy uz) = (normalizeVector cameraUp) `crossVector` n
+    (Vector3 vx vy vz) = n `crossVector` u
+
+normalizeVector :: Vector3 GLfloat -> Vector3 GLfloat
+normalizeVector (Vector3 x y z) =
+    Vector3 (x / vLength) (y / vLength) (z / vLength)
+  where
+    vLength = sqrt ( x * x + y * y + z * z )
+
+crossVector :: Vector3 GLfloat -> Vector3 GLfloat -> Vector3 GLfloat
+crossVector (Vector3 x1 y1 z1) (Vector3 x2 y2 z2) = Vector3 x3 y3 z3
+  where
+    x3 = y1 * z2 - z1 * y2
+    y3 = z1 * x2 - x1 * z2
+    z3 = x1 * y2 - y1 * x2
