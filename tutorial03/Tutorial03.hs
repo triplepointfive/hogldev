@@ -6,8 +6,7 @@ import           Foreign.Marshal.Array (withArray)
 import           Foreign.Ptr
 import           Foreign.Storable (sizeOf)
 
-bufferOffset :: Integral a => a -> Ptr b
-bufferOffset = plusPtr nullPtr . fromIntegral
+import           Hogldev.Utils (bufferOffset)
 
 main :: IO ()
 main = do

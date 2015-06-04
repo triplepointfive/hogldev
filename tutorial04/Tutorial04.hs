@@ -8,8 +8,7 @@ import           Foreign.Ptr
 import           Foreign.Storable (sizeOf)
 import           System.Exit (exitFailure)
 
-bufferOffset :: Integral a => a -> Ptr b
-bufferOffset = plusPtr nullPtr . fromIntegral
+import           Hogldev.Utils (bufferOffset)
 
 vertexShader = unlines
     [ "#version 330"

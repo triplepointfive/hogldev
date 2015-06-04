@@ -11,9 +11,7 @@ import           Foreign.Storable (sizeOf)
 import           System.Exit (exitFailure)
 
 import           Hogldev.Math3D (rotateZMatrix)
-
-bufferOffset :: Integral a => a -> Ptr b
-bufferOffset = plusPtr nullPtr . fromIntegral
+import           Hogldev.Utils (bufferOffset)
 
 vertexShader = unlines
     [ "#version 330"
