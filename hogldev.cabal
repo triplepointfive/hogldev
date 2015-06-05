@@ -20,6 +20,7 @@ library
   build-depends:       base >=4.6 && <4.9
                      , GLUT
                      , OpenGL
+                     , linear
   default-language:    Haskell2010
   ghc-options:         -W
 
@@ -155,6 +156,16 @@ executable tutorial14
                      , GLUtil
                      , hogldev
   hs-source-dirs:      tutorial14/
+  default-language:    Haskell2010
+
+executable tutorial15
+  main-is:             Tutorial15.hs
+  build-depends:       base >=4.6 && <4.9
+                     , GLUT
+                     , OpenGL
+                     , GLUtil
+                     , hogldev
+  hs-source-dirs:      tutorial15/
   default-language:    Haskell2010
 
 source-repository head

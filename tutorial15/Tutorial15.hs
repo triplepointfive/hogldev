@@ -7,14 +7,17 @@ import           Graphics.GLUtil
 import           Graphics.UI.GLUT hiding (exit)
 import           Foreign.Marshal.Array (withArray)
 import           Foreign.Storable (sizeOf)
-import           System.Exit (exitFailure)
+import           System.Exit (exitFailure, exitSuccess)
 
 import           Hogldev.Pipeline (
                     Pipeline(..), getTrans,
                     PersProj(..)
                  )
 import           Hogldev.Utils (bufferOffset)
-import           Hogldev.Camera (Camera(..), cameraOnKeyboard, initCamera)
+import           Hogldev.Camera (
+                    Camera(..), cameraOnKeyboard,
+                    initCamera, cameraOnMouse, cameraOnRender
+                 )
 
 windowWidth = 1024
 windowHeight = 768
@@ -62,13 +65,14 @@ main = do
     initialDisplayMode $= [DoubleBuffered, RGBAMode]
     initialWindowSize $= Size windowWidth windowHeight
     initialWindowPosition $= Position 100 100
-    createWindow "Tutorial 14"
+    createWindow "Tutorial 15"
 
     vbo <- createVertexBuffer
     ibo <- createIndexBuffer
     gWorldLocation <- compileShaders
     gScale <- newIORef 0.0
     cameraRef <- newIORef newCamera
+    pointerPosition $= mousePos
 
     initializeGlutCallbacks vbo ibo gWorldLocation gScale cameraRef
     clearColor $= Color4 0 0 0 0
@@ -76,6 +80,7 @@ main = do
     mainLoop
   where
     newCamera = initCamera Nothing windowWidth windowHeight
+    mousePos = Position (windowWidth `div` 2) (windowHeight `div` 2)
 
 initializeGlutCallbacks :: BufferObject
                         -> BufferObject
@@ -85,14 +90,23 @@ initializeGlutCallbacks :: BufferObject
                         -> IO ()
 initializeGlutCallbacks vbo ibo gWorldLocation gScale cameraRef = do
     displayCallback $= renderSceneCB vbo ibo gWorldLocation gScale cameraRef
-    idleCallback    $= Just (idleCB gScale)
+    idleCallback    $= Just (idleCB gScale cameraRef)
     specialCallback $= Just (specialKeyboardCB cameraRef)
+    keyboardCallback $= Just keyboardCB
+    passiveMotionCallback $= Just (passiveMotionCB cameraRef)
+
+keyboardCB :: KeyboardCallback
+keyboardCB 'q' _ = exitSuccess
+keyboardCB _ _ = return ()
 
 specialKeyboardCB :: IORef Camera -> SpecialCallback
 specialKeyboardCB cameraRef key _ = cameraRef $~! cameraOnKeyboard key
 
-idleCB :: IORef GLfloat -> IdleCallback
-idleCB gScale = do
+passiveMotionCB :: IORef Camera -> MotionCallback
+passiveMotionCB cameraRef position = cameraRef $~! cameraOnMouse position
+
+idleCB :: IORef GLfloat -> IORef Camera -> IdleCallback
+idleCB gScale cameraRef = do
   gScale $~! (+ 0.1)
   postRedisplay Nothing
 
@@ -174,6 +188,7 @@ renderSceneCB :: BufferObject
               -> IORef Camera
               -> DisplayCallback
 renderSceneCB vbo ibo gWorldLocation gScale cameraRef = do
+    cameraRef $~! cameraOnRender
     clear [ColorBuffer]
     gScaleVal <- readIORef gScale
     camera <- readIORef cameraRef
