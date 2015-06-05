@@ -10,6 +10,7 @@ import           Graphics.Rendering.OpenGL
 
 import           Hogldev.Math3D
 import           Hogldev.Utils
+import           Hogldev.Camera
 
 data Pipeline =
     WPipeline

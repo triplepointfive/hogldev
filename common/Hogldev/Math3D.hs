@@ -16,6 +16,7 @@ import           Graphics.Rendering.OpenGL
 import           Data.List
 
 import           Hogldev.Utils
+import           Hogldev.Camera
 
 type Matrix4 = [[GLfloat]]
 
@@ -97,18 +98,5 @@ cameraRotationTrans Camera{..} =
     ]
   where
     n@(Vector3 nx ny nz) = normalizeVector cameraTarget
-    u@(Vector3 ux uy uz) = (normalizeVector cameraUp) `crossVector` n
-    (Vector3 vx vy vz) = n `crossVector` u
-
-normalizeVector :: Vector3 GLfloat -> Vector3 GLfloat
-normalizeVector (Vector3 x y z) =
-    Vector3 (x / vLength) (y / vLength) (z / vLength)
-  where
-    vLength = sqrt ( x * x + y * y + z * z )
-
-crossVector :: Vector3 GLfloat -> Vector3 GLfloat -> Vector3 GLfloat
-crossVector (Vector3 x1 y1 z1) (Vector3 x2 y2 z2) = Vector3 x3 y3 z3
-  where
-    x3 = y1 * z2 - z1 * y2
-    y3 = z1 * x2 - x1 * z2
-    z3 = x1 * y2 - y1 * x2
+    u@(Vector3 ux uy uz) = (normalizeVector cameraUp) * n
+    (Vector3 vx vy vz) = n * u

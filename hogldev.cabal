@@ -16,7 +16,9 @@ library
   exposed-modules:     Hogldev.Math3D
                      , Hogldev.Pipeline
                      , Hogldev.Utils
+                     , Hogldev.Camera
   build-depends:       base >=4.6 && <4.9
+                     , GLUT
                      , OpenGL
   default-language:    Haskell2010
   ghc-options:         -W
@@ -143,6 +145,16 @@ executable tutorial13
                      , GLUtil
                      , hogldev
   hs-source-dirs:      tutorial13/
+  default-language:    Haskell2010
+
+executable tutorial14
+  main-is:             Tutorial14.hs
+  build-depends:       base >=4.6 && <4.9
+                     , GLUT
+                     , OpenGL
+                     , GLUtil
+                     , hogldev
+  hs-source-dirs:      tutorial14/
   default-language:    Haskell2010
 
 source-repository head
