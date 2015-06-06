@@ -26,4 +26,7 @@ textureLoad fileName target = readTexture fileName >>= either fail bind
         putStrLn ("Error loading texture '" ++ fileName ++ "': " ++ msg)
         return Nothing
     bind :: TextureObject -> IO (Maybe Texture)
-    bind object = return (Just (Texture object target))
+    bind object = do
+        textureBinding target $= Just object
+        textureFilter  target $= ((Linear', Just Linear'), Linear')
+        return (Just (Texture object target))

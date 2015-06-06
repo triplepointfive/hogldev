@@ -178,7 +178,7 @@ executable tutorial16
                      , OpenGL
                      , GLUtil
                      , hogldev
-                     , vector
+                     , OpenGLRaw
   hs-source-dirs:      tutorial16/
   default-language:    Haskell2010
 

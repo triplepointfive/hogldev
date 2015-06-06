@@ -23,7 +23,12 @@ import           Hogldev.Vertex (TexturedVertex(..))
 
 import           Control.Monad (when)
 import           Data.Maybe (isNothing, fromJust)
-import           Data.Vector.Storable (fromList, Vector(..))
+
+import           Graphics.Rendering.OpenGL.Raw (
+                     gl_TEXTURE_2D, glUniform1i, glActiveTexture,
+                     gl_TEXTURE0
+
+                 )
 
 windowWidth = 1024
 windowHeight = 768
@@ -58,17 +63,11 @@ fragmentShader = unlines
     , ""
     , "in vec2 TexCoord0;"
     , ""
-    , "out vec4 FragColor;"
-    , ""
     , "uniform sampler2D gSampler;"
     , ""
     , "void main()"
     , "{"
---    , "  FragColor = texture2D(gSampler, TexCoord0.st);"
-    , "if ((0.5 <= TexCoord0.x))"
-    , "  FragColor = vec4(1, 1, 1, 1);"
-    , "else"
-    , "  FragColor = vec4(0, 0, 0, 1);"
+    , "  gl_FragColor = texture2D(gSampler, TexCoord0);"
     , "}"
     ]
 
@@ -85,12 +84,13 @@ main = do
 
     vbo <- createVertexBuffer
     ibo <- createIndexBuffer
-    (gWVPLocation, gSamplerLocation) <- compileShaders
+    (gWVPLocation, UniformLocation gSamplerLocation) <- compileShaders
 
     texture <- textureLoad "assets/test.png" Texture2D
     when (isNothing texture) exitFailure
 
-    uniform gSamplerLocation $= Index1 (0 :: GLuint)
+--    uniform gSamplerLocation $= Index1 (0 :: GLuint)
+    glUniform1i gSamplerLocation 0
     gScale <- newIORef 0.0
     cameraRef <- newIORef newCamera
     pointerPosition $= mousePos
@@ -188,9 +188,11 @@ compileShaders = do
         putStrLn $ "Invalid shader program: '" ++ errorLog ++ "'"
         exitFailure
 
-    currentProgram $= Just shaderProgram
     gWVPLocation <- uniformLocation shaderProgram "gWVP"
     gSamplerLocation <- uniformLocation shaderProgram "gSampler"
+
+    currentProgram $= Just shaderProgram
+
     return (gWVPLocation, gSamplerLocation)
 
 addShader :: Program -> String -> ShaderType -> IO ()
@@ -222,7 +224,7 @@ renderSceneCB vbo ibo gWVPLocation gScale cameraRef texture = do
 
     uniformMat gWVPLocation $= getTrans
         WVPPipeline {
-            worldInfo   = Vector3 0 0 5,
+            worldInfo  = Vector3 0 0 5,
             scaleInfo  = Vector3 1 1 1,
             rotateInfo = Vector3 0 gScaleVal 0,
             persProj   = persProjection,
@@ -247,6 +249,7 @@ renderSceneCB vbo ibo gWVPLocation gScale cameraRef texture = do
 
     bindBuffer ElementArrayBuffer $= Just ibo
 
+    glActiveTexture gl_TEXTURE0
     textureBind texture (TextureUnit 0)
     drawIndexedTris 4
 
