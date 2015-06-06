@@ -18,6 +18,7 @@ library
                      , Hogldev.Utils
                      , Hogldev.Camera
                      , Hogldev.Texture
+                     , Hogldev.Vertex
   build-depends:       base >=4.6 && <4.9
                      , GLUT
                      , OpenGL

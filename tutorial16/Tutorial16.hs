@@ -19,6 +19,7 @@ import           Hogldev.Camera (
                     initCamera, cameraOnMouse, cameraOnRender
                  )
 import           Hogldev.Texture
+import           Hogldev.Vertex (TexturedVertex(..))
 
 import           Control.Monad (when)
 import           Data.Maybe (isNothing, fromJust)
@@ -63,7 +64,11 @@ fragmentShader = unlines
     , ""
     , "void main()"
     , "{"
-    , "  FragColor = texture2D(gSampler, TexCoord0.st);"
+--    , "  FragColor = texture2D(gSampler, TexCoord0.st);"
+    , "if ((0.5 <= TexCoord0.x))"
+    , "  FragColor = vec4(1, 1, 1, 1);"
+    , "else"
+    , "  FragColor = vec4(0, 0, 0, 1);"
     , "}"
     ]
 
@@ -76,7 +81,7 @@ main = do
     createWindow "Tutorial 16"
 
     frontFace $= CW
-    cullFace $= Just Back
+    cullFace $= Just Front
 
     vbo <- createVertexBuffer
     ibo <- createIndexBuffer
@@ -130,14 +135,22 @@ idleCB gScale cameraRef = do
   postRedisplay Nothing
 
 createVertexBuffer :: IO BufferObject
-createVertexBuffer = fromVector ArrayBuffer vertices
+createVertexBuffer = do
+    vbo <- genObjectName
+    bindBuffer ArrayBuffer $= Just vbo
+    withArray vertices $ \ptr ->
+        bufferData ArrayBuffer $= (size, ptr, StaticDraw)
+    return vbo
   where
-    vertices :: Vector GLfloat
-    vertices = fromList
-        [ (-1), (-1), 0,   0, 0
-        ,    0, (-1), 1, 0.5, 0
-        ,    1, (-1), 0,   1, 0
-        ,    0,    1, 0, 0.5, 1 ]
+    vertices :: [TexturedVertex]
+    vertices = [ TexturedVertex (Vertex3 (-1) (-1) 0) (TexCoord2   0 0)
+               , TexturedVertex (Vertex3    0 (-1) 1) (TexCoord2 0.5 0)
+               , TexturedVertex (Vertex3    1 (-1) 0) (TexCoord2   1 0)
+               , TexturedVertex (Vertex3    0    1 0) (TexCoord2 0.5 1)]
+
+    numVertices = length vertices
+    vertexSize  = sizeOf (head vertices)
+    size        = fromIntegral (numVertices * vertexSize)
 
 createIndexBuffer :: IO BufferObject
 createIndexBuffer = do
@@ -217,18 +230,31 @@ renderSceneCB vbo ibo gWVPLocation gScale cameraRef texture = do
         }
 
     vertexAttribArray vPosition $= Enabled
+    vertexAttribArray vTextCoord $= Enabled
+
     bindBuffer ArrayBuffer $= Just vbo
+
     vertexAttribPointer vPosition $=
-        (ToFloat, VertexArrayDescriptor 3 Float 0 (bufferOffset 0))
-    vertexAttribPointer vPosition $=
-        (ToFloat, VertexArrayDescriptor 2 Float 1 (bufferOffset 12))
+        ( ToFloat
+        , VertexArrayDescriptor 3 Float (fromIntegral vertexSize)
+          (bufferOffset 0)
+        )
+    vertexAttribPointer vTextCoord $=
+        ( ToFloat
+        , VertexArrayDescriptor 2 Float (fromIntegral vertexSize)
+          (bufferOffset (sizeOf (Vertex3 0 0 0 :: Vertex3 GLfloat)))
+        )
+
     bindBuffer ElementArrayBuffer $= Just ibo
 
     textureBind texture (TextureUnit 0)
     drawIndexedTris 4
 
     vertexAttribArray vPosition $= Disabled
+    vertexAttribArray vTextCoord $= Disabled
 
     swapBuffers
  where
     vPosition = AttribLocation 0
+    vTextCoord = AttribLocation 1
+    vertexSize = sizeOf (TexturedVertex (Vertex3 0 0 0) (TexCoord2 0 0))
