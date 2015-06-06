@@ -17,10 +17,12 @@ library
                      , Hogldev.Pipeline
                      , Hogldev.Utils
                      , Hogldev.Camera
+                     , Hogldev.Texture
   build-depends:       base >=4.6 && <4.9
                      , GLUT
                      , OpenGL
                      , linear
+                     , GLUtil
   default-language:    Haskell2010
   ghc-options:         -W
 
@@ -166,6 +168,17 @@ executable tutorial15
                      , GLUtil
                      , hogldev
   hs-source-dirs:      tutorial15/
+  default-language:    Haskell2010
+
+executable tutorial16
+  main-is:             Tutorial16.hs
+  build-depends:       base >=4.6 && <4.9
+                     , GLUT
+                     , OpenGL
+                     , GLUtil
+                     , hogldev
+                     , vector
+  hs-source-dirs:      tutorial16/
   default-language:    Haskell2010
 
 source-repository head
