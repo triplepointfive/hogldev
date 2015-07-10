@@ -39,7 +39,7 @@ data Camera = Camera
               }
               deriving Show
 
-initCamera :: Maybe ((Vector3 GLfloat), (Vector3 GLfloat), (Vector3 GLfloat))
+initCamera :: Maybe (Vector3 GLfloat, Vector3 GLfloat, Vector3 GLfloat)
            -> GLsizei
            -> GLsizei
            -> Camera
@@ -85,8 +85,8 @@ cameraOnKeyboard _ camera = camera
 
 cameraOnMouse :: Position -> Camera -> Camera
 cameraOnMouse (Position x y) c@Camera{..} = cameraUpdate $
-    c { cameraAngleH   = cameraAngleH + (fromIntegral deltaX) * rotationScale
-      , cameraAngleV   = cameraAngleV + (fromIntegral deltaY) * rotationScale
+    c { cameraAngleH   = cameraAngleH + fromIntegral deltaX * rotationScale
+      , cameraAngleV   = cameraAngleV + fromIntegral deltaY * rotationScale
       , cameraOnEdges  = catMaybes edges
       , cameraMousePos = Vector2 x y
       }

@@ -17,6 +17,7 @@ library
                      , Hogldev.Pipeline
                      , Hogldev.Utils
                      , Hogldev.Camera
+                     , Hogldev.Technique
                      , Hogldev.Texture
                      , Hogldev.Vertex
   build-depends:       base >=4.6 && <4.9
@@ -180,6 +181,17 @@ executable tutorial16
                      , hogldev
                      , OpenGLRaw
   hs-source-dirs:      tutorial16/
+  default-language:    Haskell2010
+
+executable tutorial17
+  main-is:             Tutorial17.hs
+  build-depends:       base >=4.6 && <4.9
+                     , GLUT
+                     , OpenGL
+                     , GLUtil
+                     , hogldev
+                     , OpenGLRaw
+  hs-source-dirs:      tutorial17/
   default-language:    Haskell2010
 
 source-repository head

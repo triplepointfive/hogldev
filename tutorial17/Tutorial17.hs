@@ -20,6 +20,7 @@ import           Hogldev.Camera (
                  )
 import           Hogldev.Texture
 import           Hogldev.Vertex (TexturedVertex(..))
+import           Hogldev.Technique
 
 import           Data.Maybe (isNothing, fromJust)
 
@@ -28,6 +29,8 @@ import           Graphics.Rendering.OpenGL.Raw (
                      gl_TEXTURE0
 
                  )
+
+import           LightingTechnique
 
 windowWidth = 1024
 windowHeight = 768
@@ -40,60 +43,35 @@ persProjection = PersProj
                  , persZFar  = 1000
                  }
 
-vertexShader = unlines
-    [ "#version 330"
-    , ""
-    , "layout (location = 0) in vec3 Position;"
-    , "layout (location = 1) in vec2 TexCoord;"
-    , ""
-    , "uniform mat4 gWVP;"
-    , ""
-    , "out vec2 TexCoord0;"
-    , ""
-    , "void main()"
-    , "{"
-    , "  gl_Position = gWVP * vec4(Position, 1.0);"
-    , "  TexCoord0 = TexCoord;"
-    , "}"
-    ]
-
-fragmentShader = unlines
-    [ "#version 330"
-    , ""
-    , "in vec2 TexCoord0;"
-    , ""
-    , "uniform sampler2D gSampler;"
-    , ""
-    , "void main()"
-    , "{"
-    , "  gl_FragColor = texture2D(gSampler, TexCoord0);"
-    , "}"
-    ]
-
 main :: IO ()
 main = do
     getArgsAndInitialize
     initialDisplayMode $= [DoubleBuffered, RGBAMode]
     initialWindowSize $= Size windowWidth windowHeight
     initialWindowPosition $= Position 100 100
-    createWindow "Tutorial 16"
+    createWindow "Tutorial 17"
 
     frontFace $= CW
     cullFace $= Just Front
 
     vbo <- createVertexBuffer
     ibo <- createIndexBuffer
-    (gWVPLocation, UniformLocation gSamplerLocation) <- compileShaders
 
     texture <- textureLoad "assets/test.png" Texture2D
     when (isNothing texture) exitFailure
 
-    glUniform1i gSamplerLocation 0
+--    glUniform1i gSamplerLocation 0
     gScale <- newIORef 0.0
     cameraRef <- newIORef newCamera
+
+
+    effect <- initLightingTechnique
+    enableTechnique (lightingProgram effect)
+    setLightingTextureUnit effect 0
+
     pointerPosition $= mousePos
 
-    initializeGlutCallbacks vbo ibo gWVPLocation gScale cameraRef
+    initializeGlutCallbacks vbo ibo effect gScale cameraRef
         (fromJust texture)
     clearColor $= Color4 0 0 0 0
 
@@ -104,14 +82,14 @@ main = do
 
 initializeGlutCallbacks :: BufferObject
                         -> BufferObject
-                        -> UniformLocation
+                        -> LightingTechnique
                         -> IORef GLfloat
                         -> IORef Camera
                         -> Texture
                         -> IO ()
-initializeGlutCallbacks vbo ibo gWVPLocation gScale cameraRef texture = do
+initializeGlutCallbacks vbo ibo effect gScale cameraRef texture = do
     displayCallback $=
-        renderSceneCB vbo ibo gWVPLocation gScale cameraRef texture
+        renderSceneCB vbo ibo effect gScale cameraRef texture
     idleCallback    $= Just (idleCB gScale cameraRef)
     specialCallback $= Just (specialKeyboardCB cameraRef)
     keyboardCallback $= Just keyboardCB
@@ -167,60 +145,20 @@ createIndexBuffer = do
     indexSize  = sizeOf (head indices)
     size        = fromIntegral (numIndices * indexSize)
 
-compileShaders :: IO (UniformLocation, UniformLocation)
-compileShaders = do
-    shaderProgram <- createProgram
-
-    addShader shaderProgram vertexShader VertexShader
-    addShader shaderProgram fragmentShader FragmentShader
-
-    linkProgram shaderProgram
-    linkStatus shaderProgram >>= \ status -> unless status $ do
-        errorLog <- programInfoLog shaderProgram
-        putStrLn $ "Error linking shader program: '" ++ errorLog ++ "'"
-        exitFailure
-
-    validateProgram shaderProgram
-    validateStatus shaderProgram >>= \ status -> unless status $ do
-        errorLog <- programInfoLog shaderProgram
-        putStrLn $ "Invalid shader program: '" ++ errorLog ++ "'"
-        exitFailure
-
-    gWVPLocation <- uniformLocation shaderProgram "gWVP"
-    gSamplerLocation <- uniformLocation shaderProgram "gSampler"
-
-    currentProgram $= Just shaderProgram
-
-    return (gWVPLocation, gSamplerLocation)
-
-addShader :: Program -> String -> ShaderType -> IO ()
-addShader shaderProgram shaderText shaderType = do
-    shaderObj <- createShader shaderType
-    shaderSourceBS shaderObj $= packUtf8 shaderText
-
-    compileShader shaderObj
-    compileStatus shaderObj >>= \ status -> unless status $ do
-        errorLog <- shaderInfoLog shaderObj
-        putStrLn ("Error compiling shader type " ++ show shaderType
-            ++ ": '" ++ errorLog ++ "'")
-        exitFailure
-
-    attachShader shaderProgram shaderObj
-
 renderSceneCB :: BufferObject
               -> BufferObject
-              -> UniformLocation
+              -> LightingTechnique
               -> IORef GLfloat
               -> IORef Camera
               -> Texture
               -> DisplayCallback
-renderSceneCB vbo ibo gWVPLocation gScale cameraRef texture = do
+renderSceneCB vbo ibo effect gScale cameraRef texture = do
     cameraRef $~! cameraOnRender
     clear [ColorBuffer]
     gScaleVal <- readIORef gScale
     camera <- readIORef cameraRef
 
-    uniformMat gWVPLocation $= getTrans
+    setLightingWVP effect $ getTrans
         WVPPipeline {
             worldInfo  = Vector3 0 0 5,
             scaleInfo  = Vector3 1 1 1,
@@ -228,6 +166,7 @@ renderSceneCB vbo ibo gWVPLocation gScale cameraRef texture = do
             persProj   = persProjection,
             pipeCamera = camera
         }
+    setDirectionalLight effect $ DirectionLight (Vertex3 1.0 1.0 1.0) 0.5
 
     vertexAttribArray vPosition $= Enabled
     vertexAttribArray vTextCoord $= Enabled

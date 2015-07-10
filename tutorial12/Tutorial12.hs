@@ -165,13 +165,12 @@ renderSceneCB vbo ibo gWorldLocation gScale = do
     gScaleVal <- readIORef gScale
 
     uniformMat gWorldLocation $= getTrans
-        ( WPPipeline {
+        WPPipeline {
             worldInfo   = Vector3 0 0 5,
             scaleInfo  = Vector3 1 1 1,
             rotateInfo = Vector3 0 gScaleVal 0,
             persProj   = persProjection
             }
-        )
 
     vertexAttribArray vPosition $= Enabled
     bindBuffer ArrayBuffer $= Just vbo

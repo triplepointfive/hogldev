@@ -98,5 +98,5 @@ cameraRotationTrans Camera{..} =
     ]
   where
     n@(Vector3 nx ny nz) = normalizeVector cameraTarget
-    u@(Vector3 ux uy uz) = (normalizeVector cameraUp) * n
+    u@(Vector3 ux uy uz) = normalizeVector cameraUp * n
     (Vector3 vx vy vz) = n * u
