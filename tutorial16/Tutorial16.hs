@@ -89,7 +89,6 @@ main = do
     texture <- textureLoad "assets/test.png" Texture2D
     when (isNothing texture) exitFailure
 
---    uniform gSamplerLocation $= Index1 (0 :: GLuint)
     glUniform1i gSamplerLocation 0
     gScale <- newIORef 0.0
     cameraRef <- newIORef newCamera
@@ -164,7 +163,7 @@ createIndexBuffer = do
     indices = [ 0, 3, 1
               , 1, 3, 2
               , 2, 3, 0
-              , 0, 2, 1 ]
+              , 1, 2, 0 ]
     numIndices = length indices
     indexSize  = sizeOf (head indices)
     size        = fromIntegral (numIndices * indexSize)

@@ -28,5 +28,5 @@ textureLoad fileName target = readTexture fileName >>= either fail bind
     bind :: TextureObject -> IO (Maybe Texture)
     bind object = do
         textureBinding target $= Just object
-        textureFilter  target $= ((Linear', Just Linear'), Linear')
+        textureFilter  target $= ((Linear', Nothing), Linear')
         return (Just (Texture object target))
