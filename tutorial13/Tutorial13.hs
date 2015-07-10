@@ -9,6 +9,7 @@ import           Foreign.Marshal.Array (withArray)
 import           Foreign.Storable (sizeOf)
 import           System.Exit (exitFailure)
 
+import           Hogldev.Camera (initCamera)
 import           Hogldev.Pipeline (
                     Pipeline(..), getTrans,
                     PersProj(..), Camera(..)
@@ -168,15 +169,18 @@ renderSceneCB vbo ibo gWorldLocation gScale = do
     gScaleVal <- readIORef gScale
 
     uniformMat gWorldLocation $= getTrans
-        ( WVPPipeline {
+        WVPPipeline {
             worldInfo   = Vector3 0 0 5,
             scaleInfo  = Vector3 1 1 1,
             rotateInfo = Vector3 0 gScaleVal 0,
             persProj   = persProjection,
             pipeCamera =
-                Camera (Vector3 0 0 (-3)) (Vector3 0 0 2) (Vector3 0 1 0)
-            }
-        )
+                ( initCamera Nothing windowWidth windowHeight )
+                { cameraPos    = Vector3 0 0 (-3)
+                , cameraTarget = Vector3 0 0 2
+                , cameraUp     = Vector3 0 1 0
+                }
+        }
 
     vertexAttribArray vPosition $= Enabled
     bindBuffer ArrayBuffer $= Just vbo
