@@ -25,7 +25,7 @@ import           Hogldev.Technique
 import           Data.Maybe (isNothing, fromJust)
 
 import           Graphics.Rendering.OpenGL.Raw (
-                     gl_TEXTURE_2D, glUniform1i, glActiveTexture,
+                     gl_TEXTURE_2D, glActiveTexture,
                      gl_TEXTURE0
 
                  )
@@ -60,10 +60,9 @@ main = do
     texture <- textureLoad "assets/test.png" Texture2D
     when (isNothing texture) exitFailure
 
---    glUniform1i gSamplerLocation 0
     gScale <- newIORef 0.0
     cameraRef <- newIORef newCamera
-
+    dirLight <- newIORef directionLight
 
     effect <- initLightingTechnique
     enableTechnique (lightingProgram effect)
@@ -71,7 +70,7 @@ main = do
 
     pointerPosition $= mousePos
 
-    initializeGlutCallbacks vbo ibo effect gScale cameraRef
+    initializeGlutCallbacks vbo ibo effect dirLight gScale cameraRef
         (fromJust texture)
     clearColor $= Color4 0 0 0 0
 
@@ -79,25 +78,33 @@ main = do
   where
     newCamera = initCamera Nothing windowWidth windowHeight
     mousePos = Position (windowWidth `div` 2) (windowHeight `div` 2)
+    directionLight = DirectionLight (Vertex3 1.0 1.0 1.0) 0.5
 
 initializeGlutCallbacks :: BufferObject
                         -> BufferObject
                         -> LightingTechnique
+                        -> IORef DirectionLight
                         -> IORef GLfloat
                         -> IORef Camera
                         -> Texture
                         -> IO ()
-initializeGlutCallbacks vbo ibo effect gScale cameraRef texture = do
+initializeGlutCallbacks vbo ibo effect dirLight gScale cameraRef texture = do
     displayCallback $=
-        renderSceneCB vbo ibo effect gScale cameraRef texture
+        renderSceneCB vbo ibo effect dirLight gScale cameraRef texture
     idleCallback    $= Just (idleCB gScale cameraRef)
     specialCallback $= Just (specialKeyboardCB cameraRef)
-    keyboardCallback $= Just keyboardCB
+    keyboardCallback $= Just (keyboardCB dirLight)
     passiveMotionCallback $= Just (passiveMotionCB cameraRef)
 
-keyboardCB :: KeyboardCallback
-keyboardCB 'q' _ = exitSuccess
-keyboardCB _ _ = return ()
+keyboardCB :: IORef DirectionLight -> KeyboardCallback
+keyboardCB _ 'q' _ = exitSuccess
+keyboardCB dirLight 'a' _ = do
+    (DirectionLight color intensity) <- readIORef dirLight
+    writeIORef dirLight (DirectionLight color (intensity + 0.05))
+keyboardCB dirLight 's' _ = do
+    (DirectionLight color intensity) <- readIORef dirLight
+    writeIORef dirLight (DirectionLight color (intensity - 0.05))
+keyboardCB _ _ _ = return ()
 
 specialKeyboardCB :: IORef Camera -> SpecialCallback
 specialKeyboardCB cameraRef key _ = cameraRef $~! cameraOnKeyboard key
@@ -148,15 +155,17 @@ createIndexBuffer = do
 renderSceneCB :: BufferObject
               -> BufferObject
               -> LightingTechnique
+              -> IORef DirectionLight
               -> IORef GLfloat
               -> IORef Camera
               -> Texture
               -> DisplayCallback
-renderSceneCB vbo ibo effect gScale cameraRef texture = do
+renderSceneCB vbo ibo effect dirLight gScale cameraRef texture = do
     cameraRef $~! cameraOnRender
     clear [ColorBuffer]
     gScaleVal <- readIORef gScale
     camera <- readIORef cameraRef
+    directionLight <- readIORef dirLight
 
     setLightingWVP effect $ getTrans
         WVPPipeline {
@@ -166,7 +175,7 @@ renderSceneCB vbo ibo effect gScale cameraRef texture = do
             persProj   = persProjection,
             pipeCamera = camera
         }
-    setDirectionalLight effect $ DirectionLight (Vertex3 1.0 1.0 1.0) 0.5
+    setDirectionalLight effect directionLight
 
     vertexAttribArray vPosition $= Enabled
     vertexAttribArray vTextCoord $= Enabled
