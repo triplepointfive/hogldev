@@ -42,4 +42,4 @@ enableTechnique :: Program -> IO ()
 enableTechnique shaderProgram = currentProgram $= Just shaderProgram
 
 getUniformLocation :: Program -> String -> IO UniformLocation
-getUniformLocation shaderProgram name = uniformLocation shaderProgram name
+getUniformLocation = uniformLocation

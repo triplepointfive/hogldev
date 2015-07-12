@@ -24,12 +24,6 @@ import           Hogldev.Technique
 
 import           Data.Maybe (isNothing, fromJust)
 
-import           Graphics.Rendering.OpenGL.Raw (
-                     gl_TEXTURE_2D, glActiveTexture,
-                     gl_TEXTURE0
-
-                 )
-
 import           LightingTechnique
 
 windowWidth = 1024
@@ -195,7 +189,6 @@ renderSceneCB vbo ibo effect dirLight gScale cameraRef texture = do
 
     bindBuffer ElementArrayBuffer $= Just ibo
 
-    glActiveTexture gl_TEXTURE0
     textureBind texture (TextureUnit 0)
     drawIndexedTris 4
 

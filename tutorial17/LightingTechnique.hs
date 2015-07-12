@@ -75,7 +75,7 @@ initLightingTechnique = do
     dirLightColorLoc <- getUniformLocation program "gDirectionalLight.Color"
     dirLightAmbientIntensityLoc <- getUniformLocation program
         "gDirectionalLight.AmbientIntensity"
-    return $ LightingTechnique
+    return LightingTechnique
         { lightingProgram                          = program
         , lightingWVPLoc                           = wvpLoc
         , lightingSamplerLoc                       = samplerLoc
