@@ -4,6 +4,7 @@ module Hogldev.Utils (
   , bufferOffset
   , PersProj(..)
   , normalizeVector
+  , normalizeVertex
   , rotateVector
   , wrapMaybe
 ) where
@@ -14,6 +15,19 @@ import           Linear (Quaternion(..), V3(..), rotate)
 
 bufferOffset :: Integral a => a -> Ptr b
 bufferOffset = plusPtr nullPtr . fromIntegral
+
+instance (Num a) => Num (Vertex3 a) where
+  (+) (Vertex3 x1 y1 z1) (Vertex3 x2 y2 z2) =
+      Vertex3 (x1 + x2) (y1 + y2) (z1 + z2)
+  (-) (Vertex3 x1 y1 z1) (Vertex3 x2 y2 z2) =
+      Vertex3 (x1 - x2) (y1 - y2) (z1 - z2)
+  (*) (Vertex3 x1 y1 z1) (Vertex3 x2 y2 z2) = Vertex3
+      (y1 * z2 - z1 * y2)
+      (z1 * x2 - x1 * z2)
+      (x1 * y2 - y1 * x2)
+  abs = fmap abs
+  signum = error "signum called for Vertex3"
+  fromInteger = error "fromInteger called for Vertex3"
 
 instance (Num a) => Num (Vector3 a) where
   (+) (Vector3 x1 y1 z1) (Vector3 x2 y2 z2) =
@@ -35,6 +49,12 @@ instance (Num a) => Num (Vector2 a) where
   (*) _ _ = error "(*) called for Vector2"
   signum = error "signum called for Vector2"
   fromInteger = error "fromInteger called for Vector2"
+
+normalizeVertex :: Vertex3 GLfloat -> Vertex3 GLfloat
+normalizeVertex (Vertex3 x y z) =
+    Vertex3 (x / vLength) (y / vLength) (z / vLength)
+  where
+    vLength = sqrt ( x * x + y * y + z * z )
 
 normalizeVector :: Vector3 GLfloat -> Vector3 GLfloat
 normalizeVector (Vector3 x y z) =
