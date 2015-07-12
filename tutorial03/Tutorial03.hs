@@ -3,7 +3,6 @@ module Main where
 import           Graphics.Rendering.OpenGL
 import           Graphics.UI.GLUT
 import           Foreign.Marshal.Array (withArray)
-import           Foreign.Ptr
 import           Foreign.Storable (sizeOf)
 
 import           Hogldev.Utils (bufferOffset)

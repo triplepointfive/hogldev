@@ -1,6 +1,6 @@
 module Main where
 
-import           Control.Monad (when, unless)
+import           Control.Monad (when)
 import           Data.IORef
 import           Graphics.Rendering.OpenGL
 import           Graphics.GLUtil
@@ -109,6 +109,7 @@ passiveMotionCB cameraRef position = cameraRef $~! cameraOnMouse position
 idleCB :: IORef GLfloat -> IORef Camera -> IdleCallback
 idleCB gScale cameraRef = do
   gScale $~! (+ 0.1)
+  cameraRef $~! cameraOnRender
   postRedisplay Nothing
 
 createVertexBuffer :: IO BufferObject

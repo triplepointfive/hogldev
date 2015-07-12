@@ -23,12 +23,6 @@ import           Hogldev.Vertex (TexturedVertex(..))
 
 import           Data.Maybe (isNothing, fromJust)
 
-import           Graphics.Rendering.OpenGL.Raw (
-                     gl_TEXTURE_2D, glUniform1i, glActiveTexture,
-                     gl_TEXTURE0
-
-                 )
-
 windowWidth = 1024
 windowHeight = 768
 
@@ -83,12 +77,12 @@ main = do
 
     vbo <- createVertexBuffer
     ibo <- createIndexBuffer
-    (gWVPLocation, UniformLocation gSamplerLocation) <- compileShaders
+    (gWVPLocation, gSamplerLocation) <- compileShaders
 
     texture <- textureLoad "assets/test.png" Texture2D
     when (isNothing texture) exitFailure
 
-    glUniform1i gSamplerLocation 0
+    uniformScalar gSamplerLocation $= (0 :: GLuint)
     gScale <- newIORef 0.0
     cameraRef <- newIORef newCamera
     pointerPosition $= mousePos
@@ -130,6 +124,7 @@ passiveMotionCB cameraRef position = cameraRef $~! cameraOnMouse position
 idleCB :: IORef GLfloat -> IORef Camera -> IdleCallback
 idleCB gScale cameraRef = do
   gScale $~! (+ 0.1)
+  cameraRef $~! cameraOnRender
   postRedisplay Nothing
 
 createVertexBuffer :: IO BufferObject
@@ -247,7 +242,6 @@ renderSceneCB vbo ibo gWVPLocation gScale cameraRef texture = do
 
     bindBuffer ElementArrayBuffer $= Just ibo
 
-    glActiveTexture gl_TEXTURE0
     textureBind texture (TextureUnit 0)
     drawIndexedTris 4
 

@@ -108,6 +108,7 @@ passiveMotionCB cameraRef position = cameraRef $~! cameraOnMouse position
 idleCB :: IORef GLfloat -> IORef Camera -> IdleCallback
 idleCB gScale cameraRef = do
   gScale $~! (+ 0.1)
+  cameraRef $~! cameraOnRender
   postRedisplay Nothing
 
 createVertexBuffer :: IO BufferObject

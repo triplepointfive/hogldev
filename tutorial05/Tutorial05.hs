@@ -5,7 +5,6 @@ import           Data.IORef
 import           Graphics.Rendering.OpenGL
 import           Graphics.UI.GLUT hiding (exit)
 import           Foreign.Marshal.Array (withArray)
-import           Foreign.Ptr
 import           Foreign.Storable (sizeOf)
 import           System.Exit (exitFailure)
 
