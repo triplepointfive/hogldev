@@ -77,7 +77,7 @@ main = do
     directionLight =
         DirectionLight
         { ambientColor     = (Vertex3 1.0 1.0 1.0)
-        , ambientIntensity = 0.01
+        , ambientIntensity = 0.00
         , diffuseDirection = (Vertex3 1.0 0.0 0.0)
         , diffuseIntensity = 0.75
         }
@@ -223,6 +223,10 @@ renderSceneCB vbo ibo effect dirLight gScale cameraRef texture = do
             rotateInfo = Vector3 0 gScaleVal 0
         }
     setDirectionalLight effect directionLight
+
+    setEyeWorldPos effect (cameraPos camera)
+    setMatSpecularPower effect 32
+    setMaterialSpecularIntensity effect 1
 
     vertexAttribArray vPosition $= Enabled
     vertexAttribArray vTextCoord $= Enabled

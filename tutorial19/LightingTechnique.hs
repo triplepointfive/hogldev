@@ -9,6 +9,9 @@ module LightingTechnique (
   , setLightingWorldMatrix
   , setLightingTextureUnit
   , setDirectionalLight
+  , setEyeWorldPos
+  , setMatSpecularPower
+  , setMaterialSpecularIntensity
 ) where
 
 
@@ -29,12 +32,14 @@ vertexShader = unlines
     , ""
     , "out vec2 TexCoord0;"
     , "out vec3 Normal0;"
+    , "out vec3 WorldPos0;"
     , ""
     , "void main()"
     , "{"
     , "  gl_Position = gWVP * vec4(Position, 1.0);"
-    , "  TexCoord0 = TexCoord;"
-    , "  Normal0 = (gWorld * vec4(Normal, 0.0)).xyz;"
+    , "  TexCoord0   = TexCoord;"
+    , "  Normal0     = (gWorld * vec4(Normal, 0.0)).xyz;"
+    , "  WorldPos0   = (gWorld * vec4(Position, 1.0)).xyz;"
     , "}"
     ]
 
@@ -43,38 +48,53 @@ fragmentShader = unlines
     , ""
     , "in vec2 TexCoord0;"
     , "in vec3 Normal0;"
+    , "in vec3 WorldPos0;"
+    , ""
+    , "out vec4 FragColor;"
     , ""
     , "struct DirectionalLight"
     , "{"
-    , "  vec3 Color;"
-    , "  float AmbientIntensity;"
-    , "  float DiffuseIntensity;"
-    , "  vec3 Direction;"
+    , "    vec3 Color;"
+    , "    float AmbientIntensity;"
+    , "    float DiffuseIntensity;"
+    , "    vec3 Direction;"
     , "};"
     , ""
     , "uniform DirectionalLight gDirectionalLight;"
     , "uniform sampler2D gSampler;"
+    , "uniform vec3 gEyeWorldPos;"
+    , "uniform float gMatSpecularIntensity;"
+    , "uniform float gSpecularPower;"
     , ""
     , "void main()"
     , "{"
-    , "  vec4 AmbientColor = vec4(gDirectionalLight.Color, 1.0f) *"
-    , "    gDirectionalLight.AmbientIntensity;"
+    , "    vec4 AmbientColor = vec4(gDirectionalLight.Color, 1.0f) *"
+    , "                        gDirectionalLight.AmbientIntensity;"
+    , "    vec3 LightDirection = -gDirectionalLight.Direction;"
+    , "    vec3 Normal = normalize(Normal0);"
     , ""
-    , "  float DiffuseFactor = dot(normalize(Normal0),"
-    , "    -gDirectionalLight.Direction);"
+    , "    float DiffuseFactor = dot(Normal, LightDirection);"
     , ""
-    , "  vec4 DiffuseColor;"
+    , "    vec4 DiffuseColor  = vec4(0, 0, 0, 0);"
+    , "    vec4 SpecularColor = vec4(0, 0, 0, 0);"
     , ""
-    , "  if (DiffuseFactor > 0) {"
-    , "    DiffuseColor = vec4(gDirectionalLight.Color, 1.0f) *"
-    , "      gDirectionalLight.DiffuseIntensity *"
-    , "      DiffuseFactor;"
-    , "  } else {"
-    , "    DiffuseColor = vec4(0,0,0,0);"
-    , "  }"
+    , "    if (DiffuseFactor > 0) {"
+    , "        DiffuseColor = vec4(gDirectionalLight.Color, 1.0f) *"
+    , "                       gDirectionalLight.DiffuseIntensity *"
+    , "                       DiffuseFactor;"
     , ""
-    , "  gl_FragColor = texture2D(gSampler, TexCoord0) *"
-    , "    (AmbientColor + DiffuseColor);"
+    , "        vec3 VertexToEye = normalize(gEyeWorldPos - WorldPos0);"
+    , "        vec3 LightReflect = normalize(reflect(gDirectionalLight.Direction, Normal));"
+    , "        float SpecularFactor = dot(VertexToEye, LightReflect);"
+    , "        SpecularFactor = pow(SpecularFactor, gSpecularPower);"
+    , "        if (SpecularFactor > 0) {"
+    , "            SpecularColor = vec4(gDirectionalLight.Color, 1.0f) *"
+    , "                            gMatSpecularIntensity * SpecularFactor;"
+    , "        }"
+    , "    }"
+    , ""
+    , "    FragColor = texture2D(gSampler, TexCoord0.xy) *"
+    , "                (AmbientColor + DiffuseColor + SpecularColor);"
     , "}"
     ]
 
@@ -165,4 +185,16 @@ setDirectionalLight LightingTechnique{..} DirectionLight{..} = do
   where
     (Vertex3 cx cy cz) = ambientColor
     (Vertex3 lx ly lz) = diffuseDirection
+
+setMaterialSpecularIntensity :: LightingTechnique -> GLfloat -> IO ()
+setMaterialSpecularIntensity LightingTechnique{..} intensity =
+    uniformScalar lSamplerLoc $= intensity
+
+setMatSpecularPower :: LightingTechnique -> GLfloat -> IO ()
+setMatSpecularPower LightingTechnique{..} power =
+    uniformScalar lMatSpecularPowerLoc $= power
+
+setEyeWorldPos :: LightingTechnique -> Vector3 GLfloat -> IO ()
+setEyeWorldPos LightingTechnique{..} (Vector3 x y z) =
+    uniformVec lDirLightDirectionLoc $= [x, y, z]
 
