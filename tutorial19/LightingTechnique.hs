@@ -196,5 +196,5 @@ setMatSpecularPower LightingTechnique{..} power =
 
 setEyeWorldPos :: LightingTechnique -> Vector3 GLfloat -> IO ()
 setEyeWorldPos LightingTechnique{..} (Vector3 x y z) =
-    uniformVec lDirLightDirectionLoc $= [x, y, z]
+    uniformVec lEyeWorldPosLoc $= [x, y, z]
 
