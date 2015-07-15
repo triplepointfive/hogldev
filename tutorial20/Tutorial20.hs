@@ -13,18 +13,16 @@ import           Hogldev.Pipeline (
                     Pipeline(..), getTrans,
                     PersProj(..)
                  )
-import           Hogldev.Utils (bufferOffset, normalizeVertex)
+import           Hogldev.Utils (bufferOffset)
 import           Hogldev.Camera (
                     Camera(..), cameraOnKeyboard,
                     initCamera, cameraOnMouse, cameraOnRender
                  )
 import           Hogldev.Texture
-import           Hogldev.Vertex (TexturedVertex(..), TNVertex(..))
+import           Hogldev.Vertex (TNVertex(..))
 import           Hogldev.Technique
 
 import           Data.Maybe (isNothing, fromJust)
-import           Data.List.Split (chunksOf)
-import           Data.List (genericIndex, genericSplitAt)
 
 import           LightingTechnique
 
@@ -47,10 +45,10 @@ main = do
     initialWindowPosition $= Position 100 100
     createWindow "Tutorial 20"
 
-    frontFace $= CW
-    cullFace $= Just Front
+    -- frontFace $= CW
+    -- cullFace $= Just Front
 
-    vbo <- createVertexBuffer indices
+    vbo <- createVertexBuffer
     ibo <- createIndexBuffer indices
 
     texture <- textureLoad "assets/test.png" Texture2D
@@ -82,10 +80,9 @@ main = do
         , diffuseIntensity = 0.75
         }
     indices :: [GLuint]
-    indices = [ 0, 3, 1
-              , 1, 3, 2
-              , 2, 3, 0
-              , 1, 2, 0 ]
+    indices = [ 0, 2, 1
+              , 0, 3, 2
+              ]
 
 initializeGlutCallbacks :: BufferObject
                         -> BufferObject
@@ -127,8 +124,8 @@ idleCB gScale cameraRef = do
   cameraRef $~! cameraOnRender
   postRedisplay Nothing
 
-createVertexBuffer :: [GLuint] -> IO BufferObject
-createVertexBuffer indices = do
+createVertexBuffer :: IO BufferObject
+createVertexBuffer = do
     vbo <- genObjectName
     bindBuffer ArrayBuffer $= Just vbo
     withArray vertices $ \ptr ->
@@ -136,50 +133,17 @@ createVertexBuffer indices = do
     return vbo
   where
     vertices :: [TNVertex]
-    vertices = calcNormals indices
-        [ TexturedVertex (Vertex3 (-1) (-1) 0) (TexCoord2   0 0)
-        , TexturedVertex (Vertex3    0 (-1) 1) (TexCoord2 0.5 0)
-        , TexturedVertex (Vertex3    1 (-1) 0) (TexCoord2   1 0)
-        , TexturedVertex (Vertex3    0    1 0) (TexCoord2 0.5 1)]
+    vertices =
+        [ TNVertex (Vertex3 (-10) (-2) (-10)) (TexCoord2 0 0) normal
+        , TNVertex (Vertex3    10 (-2) (-10)) (TexCoord2 1 0) normal
+        , TNVertex (Vertex3    10 (-2)    10) (TexCoord2 1 1) normal
+        , TNVertex (Vertex3 (-10) (-2)    10) (TexCoord2 0 1) normal
+        ]
 
     numVertices = length vertices
     vertexSize  = sizeOf (head vertices)
     size        = fromIntegral (numVertices * vertexSize)
-
-calcNormals :: [GLuint] -> [TexturedVertex] -> [TNVertex]
-calcNormals indices vertices = zipWith addNormal vertices normals
-  where
-    addNormal :: TexturedVertex -> Vertex3 GLfloat -> TNVertex
-    addNormal (TexturedVertex v t) n = TNVertex v t (normalizeVertex n)
-
-    normals :: [Vertex3 GLfloat]
-    normals = foldl triangleNormal nullNormals (chunksOf 3 indices)
-      where
-        nullNormals = replicate (length indices `div` 3) (Vertex3 0 1 0)
-
-    triangleNormal :: [Vertex3 GLfloat] -> [GLuint] -> [Vertex3 GLfloat]
-    triangleNormal normals [i1, i2, i3] =
-        foldl (flip (uncurry replaceAtIndex)) normals indexedNormals
-      where
-        indexedNormals :: [(GLuint, Vertex3 GLfloat)]
-        indexedNormals = [(i1, n1), (i2, n2), (i3, n3)]
-
-        (TexturedVertex p1 _) = genericIndex vertices i1
-        (TexturedVertex p2 _) = genericIndex vertices i2
-        (TexturedVertex p3 _) = genericIndex vertices i3
-
-        normal, n1, n2, n3 :: Vertex3 GLfloat
-        normal = (p2 - p1) * (p3 - p1)
-
-        n1 = genericIndex normals i1 + normal
-        n2 = genericIndex normals i2 + normal
-        n3 = genericIndex normals i3 + normal
-    triangleNormal _ _ = error "triangleNormal didn't get exact 3 elements!"
-
-    replaceAtIndex :: Integral i => i -> a -> [a] -> [a]
-    replaceAtIndex n item ls = a ++ (item:b)
-      where
-        (a, (_:b)) = genericSplitAt n ls
+    normal      = Vertex3 0 1 0
 
 createIndexBuffer :: [GLuint] -> IO BufferObject
 createIndexBuffer indices = do
@@ -208,6 +172,36 @@ renderSceneCB vbo ibo effect dirLight gScale cameraRef texture = do
     camera <- readIORef cameraRef
     directionLight <- readIORef dirLight
 
+    let pointLights =
+          [ PointLight
+            { pAmbientColor     = Vertex3 1 0 0
+            , pAmbientIntensity = 0
+            , pDiffuseIntensity = 0.5
+            , pPosition         = Vertex3 (sin (gScaleVal) * 10) 1 (cos (gScaleVal) * 10)
+            , pConstant         = 1
+            , pLinear           = 0.1
+            , pExp              = 0
+            }
+          , PointLight
+            { pAmbientColor     = Vertex3 0 1 0
+            , pAmbientIntensity = 0
+            , pDiffuseIntensity = 0.5
+            , pPosition         = Vertex3 (sin (gScaleVal + 2.1) * 10) 1 (cos (gScaleVal + 2.1) * 10)
+            , pConstant         = 1
+            , pLinear           = 0.1
+            , pExp              = 0
+            }
+          , PointLight
+            { pAmbientColor     = Vertex3 0 0 1
+            , pAmbientIntensity = 0
+            , pDiffuseIntensity = 0.5
+            , pPosition         = Vertex3 (sin (gScaleVal + 4.2) * 10) 1 (cos (gScaleVal + 4.2) * 10)
+            , pConstant         = 1
+            , pLinear           = 0.1
+            , pExp              = 0
+            }
+          ]
+
     setLightingWVP effect $ getTrans
         WVPPipeline {
             worldInfo  = Vector3 0 0 5,
@@ -223,6 +217,7 @@ renderSceneCB vbo ibo effect dirLight gScale cameraRef texture = do
             rotateInfo = Vector3 0 gScaleVal 0
         }
     setDirectionalLight effect directionLight
+    setPointLights effect 3 pointLights
 
     setEyeWorldPos effect (cameraPos camera)
     setMatSpecularPower effect 32
@@ -256,7 +251,7 @@ renderSceneCB vbo ibo effect dirLight gScale cameraRef texture = do
     bindBuffer ElementArrayBuffer $= Just ibo
 
     textureBind texture (TextureUnit 0)
-    drawIndexedTris 4
+    drawIndexedTris 2
 
     vertexAttribArray vPosition $= Disabled
     vertexAttribArray vTextCoord $= Disabled
