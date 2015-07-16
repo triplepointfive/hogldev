@@ -77,7 +77,7 @@ main = do
         { ambientColor     = (Vertex3 1.0 1.0 1.0)
         , ambientIntensity = 0.0
         , diffuseDirection = (Vertex3 1.0 (-1.0) 0.0)
-        , diffuseIntensity = 0.01
+        , diffuseIntensity = 0.05
         }
     indices :: [GLuint]
     indices = [ 0, 1, 2

@@ -140,9 +140,8 @@ pointLightLoc program index = do
         , plExpLoc              = lExp
         }
   where
-    loc field = do
-        putStrLn ("gPointLights[" ++ show index ++ "]." ++ field)
-        getUniformLocation program ("gPointLights[" ++ show index ++ "]." ++ field)
+    loc field = getUniformLocation program
+        ("gPointLights[" ++ show index ++ "]." ++ field)
 
 setLightingWVP :: LightingTechnique -> [[GLfloat]] -> IO ()
 setLightingWVP LightingTechnique{..} mat = uniformMat lWVPLoc $= mat
@@ -177,7 +176,7 @@ setEyeWorldPos :: LightingTechnique -> Vector3 GLfloat -> IO ()
 setEyeWorldPos LightingTechnique{..} (Vector3 x y z) =
     uniformVec lEyeWorldPosLoc $= [x, y, z]
 
-setPointLights :: LightingTechnique -> GLuint -> [PointLight] -> IO ()
+setPointLights :: LightingTechnique -> GLint -> [PointLight] -> IO ()
 setPointLights LightingTechnique{..} numLights pointLights = do
     uniformScalar lNumPointLightsLoc $= numLights
     mapM_ (uncurry setPointLight) (zip pointLights lPointLightLocs)
