@@ -45,8 +45,8 @@ main = do
     initialWindowPosition $= Position 100 100
     createWindow "Tutorial 20"
 
-    -- frontFace $= CW
-    -- cullFace $= Just Front
+    frontFace $= CW
+    cullFace $= Just Front
 
     vbo <- createVertexBuffer
     ibo <- createIndexBuffer indices
@@ -75,13 +75,13 @@ main = do
     directionLight =
         DirectionLight
         { ambientColor     = (Vertex3 1.0 1.0 1.0)
-        , ambientIntensity = 0.00
-        , diffuseDirection = (Vertex3 1.0 0.0 0.0)
-        , diffuseIntensity = 0.75
+        , ambientIntensity = 0.0
+        , diffuseDirection = (Vertex3 1.0 (-1.0) 0.0)
+        , diffuseIntensity = 0.01
         }
     indices :: [GLuint]
-    indices = [ 0, 2, 1
-              , 0, 3, 2
+    indices = [ 0, 1, 2
+              , 0, 2, 3
               ]
 
 initializeGlutCallbacks :: BufferObject
@@ -120,7 +120,7 @@ passiveMotionCB cameraRef position = cameraRef $~! cameraOnMouse position
 
 idleCB :: IORef GLfloat -> IORef Camera -> IdleCallback
 idleCB gScale cameraRef = do
-  gScale $~! (+ 0.1)
+  gScale $~! (+ 0.01)
   cameraRef $~! cameraOnRender
   postRedisplay Nothing
 
@@ -195,7 +195,7 @@ renderSceneCB vbo ibo effect dirLight gScale cameraRef texture = do
             { pAmbientColor     = Vertex3 0 0 1
             , pAmbientIntensity = 0
             , pDiffuseIntensity = 0.5
-            , pPosition         = Vertex3 (sin (gScaleVal + 4.2) * 10) 1 (cos (gScaleVal + 4.2) * 10)
+            , pPosition         = Vertex3 (sin (gScaleVal + 4.2) * 10) 0 (cos (gScaleVal + 4.2) * 10)
             , pConstant         = 1
             , pLinear           = 0.1
             , pExp              = 0

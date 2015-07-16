@@ -10,8 +10,9 @@ import           System.Exit (exitFailure)
 
 import           Graphics.Rendering.OpenGL
 
-addShader :: Program -> String -> ShaderType -> IO ()
-addShader shaderProgram shaderText shaderType = do
+addShader :: Program -> FilePath -> ShaderType -> IO ()
+addShader shaderProgram shaderFile shaderType = do
+    shaderText <- readFile shaderFile
     shaderObj <- createShader shaderType
     shaderSourceBS shaderObj $= packUtf8 shaderText
 
@@ -42,4 +43,9 @@ enableTechnique :: Program -> IO ()
 enableTechnique shaderProgram = currentProgram $= Just shaderProgram
 
 getUniformLocation :: Program -> String -> IO UniformLocation
-getUniformLocation = uniformLocation
+getUniformLocation proram name = do
+   loc <- uniformLocation proram name
+   return loc
+   -- if UniformLocation 0 == loc && name /= "gDirectionalLight.Base.AmbientIntensity"
+   --    then error $ "Unable to retrive location for uniform variable: " ++ name
+   --    else return loc

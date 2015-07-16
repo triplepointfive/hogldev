@@ -12,35 +12,6 @@ import           System.Exit (exitFailure)
 import           Hogldev.Pipeline (Pipeline(..), getTrans)
 import           Hogldev.Utils (bufferOffset)
 
-vertexShader = unlines
-    [ "#version 330"
-    , ""
-    , "layout (location = 0) in vec3 Position;"
-    , ""
-    , "uniform mat4 gWorld;"
-    , ""
-    , "out vec4 Color;"
-    , ""
-    , "void main()"
-    , "{"
-    , "  gl_Position = gWorld * vec4(Position, 1.0);"
-    , "  Color = vec4(clamp(Position, 0.0, 1.0), 1.0);"
-    , "}"
-    ]
-
-fragmentShader = unlines
-    [ "#version 330"
-    , ""
-    , "in vec4 Color;"
-    , ""
-    , "out vec4 FragColor;"
-    , ""
-    , "void main()"
-    , "{"
-    , "  FragColor = Color;"
-    , "}"
-    ]
-
 main :: IO ()
 main = do
     getArgsAndInitialize
@@ -112,8 +83,8 @@ compileShaders :: IO UniformLocation
 compileShaders = do
     shaderProgram <- createProgram
 
-    addShader shaderProgram vertexShader VertexShader
-    addShader shaderProgram fragmentShader FragmentShader
+    addShader shaderProgram "tutorial11/shader.vs" VertexShader
+    addShader shaderProgram "tutorial11/shader.fs" FragmentShader
 
     linkProgram shaderProgram
     linkStatus shaderProgram >>= \ status -> unless status $ do
@@ -130,8 +101,9 @@ compileShaders = do
     currentProgram $= Just shaderProgram
     uniformLocation shaderProgram "gWorld"
 
-addShader :: Program -> String -> ShaderType -> IO ()
-addShader shaderProgram shaderText shaderType = do
+addShader :: Program -> FilePath -> ShaderType -> IO ()
+addShader shaderProgram shaderFile shaderType = do
+    shaderText <- readFile shaderFile
     shaderObj <- createShader shaderType
     shaderSourceBS shaderObj $= packUtf8 shaderText
 

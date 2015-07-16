@@ -14,45 +14,6 @@ import           Graphics.GLUtil
 
 import           Hogldev.Technique
 
-vertexShader = unlines
-    [ "#version 330"
-    , ""
-    , "layout (location = 0) in vec3 Position;"
-    , "layout (location = 1) in vec2 TexCoord;"
-    , ""
-    , "uniform mat4 gWVP;"
-    , ""
-    , "out vec2 TexCoord0;"
-    , ""
-    , "void main()"
-    , "{"
-    , "  gl_Position = gWVP * vec4(Position, 1.0);"
-    , "  TexCoord0 = TexCoord;"
-    , "}"
-    ]
-
-fragmentShader = unlines
-    [ "#version 330"
-    , ""
-    , "in vec2 TexCoord0;"
-    , ""
-    , "struct DirectionalLight"
-    , "{"
-    , "  vec3 Color;"
-    , "  float AmbientIntensity;"
-    , "};"
-    , ""
-    , "uniform DirectionalLight gDirectionalLight;"
-    , "uniform sampler2D gSampler;"
-    , ""
-    , "void main()"
-    , "{"
-    , "  gl_FragColor = texture2D(gSampler, TexCoord0) *"
-    , "               vec4(gDirectionalLight.Color, 1.0f) *"
-    , "               gDirectionalLight.AmbientIntensity;"
-    , "}"
-    ]
-
 data DirectionLight = DirectionLight (Vertex3 GLfloat) GLfloat
 
 data LightingTechnique =
@@ -67,8 +28,8 @@ data LightingTechnique =
 initLightingTechnique :: IO LightingTechnique
 initLightingTechnique = do
     program <- createProgram
-    addShader program vertexShader VertexShader
-    addShader program fragmentShader FragmentShader
+    addShader program "tutorial17/lighting.vs" VertexShader
+    addShader program "tutorial17/lighting.fs" FragmentShader
     finalize program
     wvpLoc <- getUniformLocation program "gWVP"
     samplerLoc <- getUniformLocation program "gSampler"
@@ -95,3 +56,4 @@ setDirectionalLight LightingTechnique{..}
     (DirectionLight (Vertex3 x y z) intensity) = do
     uniformVec lightingDirLightColorLoc $=  [x, y, z]
     uniformScalar lightingDirLightAmbientIntensityColorLoc $= intensity
+

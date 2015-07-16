@@ -34,36 +34,6 @@ persProjection = PersProj
                  , persZFar  = 1000
                  }
 
-vertexShader = unlines
-    [ "#version 330"
-    , ""
-    , "layout (location = 0) in vec3 Position;"
-    , "layout (location = 1) in vec2 TexCoord;"
-    , ""
-    , "uniform mat4 gWVP;"
-    , ""
-    , "out vec2 TexCoord0;"
-    , ""
-    , "void main()"
-    , "{"
-    , "  gl_Position = gWVP * vec4(Position, 1.0);"
-    , "  TexCoord0 = TexCoord;"
-    , "}"
-    ]
-
-fragmentShader = unlines
-    [ "#version 330"
-    , ""
-    , "in vec2 TexCoord0;"
-    , ""
-    , "uniform sampler2D gSampler;"
-    , ""
-    , "void main()"
-    , "{"
-    , "  gl_FragColor = texture2D(gSampler, TexCoord0);"
-    , "}"
-    ]
-
 main :: IO ()
 main = do
     getArgsAndInitialize
@@ -166,8 +136,8 @@ compileShaders :: IO (UniformLocation, UniformLocation)
 compileShaders = do
     shaderProgram <- createProgram
 
-    addShader shaderProgram vertexShader VertexShader
-    addShader shaderProgram fragmentShader FragmentShader
+    addShader shaderProgram "tutorial16/shader.vs" VertexShader
+    addShader shaderProgram "tutorial16/shader.fs" FragmentShader
 
     linkProgram shaderProgram
     linkStatus shaderProgram >>= \ status -> unless status $ do
@@ -188,8 +158,9 @@ compileShaders = do
 
     return (gWVPLocation, gSamplerLocation)
 
-addShader :: Program -> String -> ShaderType -> IO ()
-addShader shaderProgram shaderText shaderType = do
+addShader :: Program -> FilePath -> ShaderType -> IO ()
+addShader shaderProgram shaderFile shaderType = do
+    shaderText <- readFile shaderFile
     shaderObj <- createShader shaderType
     shaderSourceBS shaderObj $= packUtf8 shaderText
 

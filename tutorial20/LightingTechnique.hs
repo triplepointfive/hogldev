@@ -23,131 +23,6 @@ import           Hogldev.Technique
 
 maxPointLights = 3
 
-vertexShader = unlines
-    [ "#version 330"
-    , ""
-    , "layout (location = 0) in vec3 Position;"
-    , "layout (location = 1) in vec2 TexCoord;"
-    , "layout (location = 2) in vec3 Normal;"
-    , ""
-    , "uniform mat4 gWVP;"
-    , "uniform mat4 gWorld;"
-    , ""
-    , "out vec2 TexCoord0;"
-    , "out vec3 Normal0;"
-    , "out vec3 WorldPos0;"
-    , ""
-    , "void main()"
-    , "{"
-    , "  gl_Position = gWVP * vec4(Position, 1.0);"
-    , "  TexCoord0   = TexCoord;"
-    , "  Normal0     = (gWorld * vec4(Normal, 0.0)).xyz;"
-    , "  WorldPos0   = (gWorld * vec4(Position, 1.0)).xyz;"
-    , "}"
-    ]
-
-fragmentShader = unlines
-    [ "#version 330"
-    , ""
-    , "const int MAX_POINT_LIGHTS = 3;"
-    , ""
-    , "in vec2 TexCoord0;"
-    , "in vec3 Normal0;"
-    , "in vec3 WorldPos0;"
-    , ""
-    , "out vec4 FragColor;"
-    , ""
-    , "struct BaseLight"
-    , "{"
-    , "    vec3 Color;"
-    , "    float AmbientIntensity;"
-    , "    float DiffuseIntensity;"
-    , "};"
-    , ""
-    , "struct DirectionalLight"
-    , "{"
-    , "    struct BaseLight Base;"
-    , "    vec3 Direction;"
-    , "};"
-    , ""
-    , "struct Attenuation"
-    , "{"
-    , "    float Constant;"
-    , "    float Linear;"
-    , "    float Exp;"
-    , "};"
-    , ""
-    , "struct PointLight"
-    , "{"
-    , "    struct BaseLight Base;"
-    , "    vec3 Position;"
-    , "    Attenuation Atten;"
-    , "};"
-    , ""
-    , "uniform int gNumPointLights;"
-    , "uniform DirectionalLight gDirectionalLight;"
-    , "uniform PointLight gPointLights[MAX_POINT_LIGHTS];"
-    , "uniform sampler2D gSampler;"
-    , "uniform vec3 gEyeWorldPos;"
-    , "uniform float gMatSpecularIntensity;"
-    , "uniform float gSpecularPower;"
-    , ""
-    , "vec4 CalcLightInternal(struct BaseLight Light, vec3 LightDirection, vec3 Normal)"
-    , "{"
-    , "    vec4 AmbientColor = vec4(Light.Color, 1.0f) * Light.AmbientIntensity;"
-    , "    float DiffuseFactor = dot(Normal, -LightDirection);"
-    , ""
-    , "    vec4 DiffuseColor  = vec4(0, 0, 0, 0);"
-    , "    vec4 SpecularColor = vec4(0, 0, 0, 0);"
-    , ""
-    , "    if (DiffuseFactor > 0) {"
-    , "        DiffuseColor = vec4(Light.Color, 1.0f) * Light.DiffuseIntensity * DiffuseFactor;"
-    , ""
-    , "        vec3 VertexToEye = normalize(gEyeWorldPos - WorldPos0);"
-    , "        vec3 LightReflect = normalize(reflect(LightDirection, Normal));"
-    , "        float SpecularFactor = dot(VertexToEye, LightReflect);"
-    , "        SpecularFactor = pow(SpecularFactor, gSpecularPower);"
-    , "        if (SpecularFactor > 0) {"
-    , "            SpecularColor = vec4(Light.Color, 1.0f) *"
-    , "                            gMatSpecularIntensity * SpecularFactor;"
-    , "        }"
-    , "    }"
-    , ""
-    , "    return (AmbientColor + DiffuseColor + SpecularColor);"
-    , "}"
-    , ""
-    , "vec4 CalcDirectionalLight(vec3 Normal)"
-    , "{"
-    , "    return CalcLightInternal(gDirectionalLight.Base, gDirectionalLight.Direction, Normal);"
-    , "}"
-    , ""
-    , "vec4 CalcPointLight(int Index, vec3 Normal)"
-    , "{"
-    , "    vec3 LightDirection = WorldPos0 - gPointLights[Index].Position;"
-    , "    float Distance = length(LightDirection);"
-    , "    LightDirection = normalize(LightDirection);"
-    , ""
-    , "    vec4 Color = CalcLightInternal(gPointLights[Index].Base, LightDirection, Normal);"
-    , "    float Attenuation =  gPointLights[Index].Atten.Constant +"
-    , "                         gPointLights[Index].Atten.Linear * Distance +"
-    , "                         gPointLights[Index].Atten.Exp * Distance * Distance;"
-    , ""
-    , "    return Color / Attenuation;"
-    , "}"
-    , ""
-    , "void main()"
-    , "{"
-    , "    vec3 Normal = normalize(Normal0);"
-    , "    vec4 TotalLight = CalcDirectionalLight(Normal);"
-    , ""
-    , "    for (int i = 0 ; i < gNumPointLights ; i++) {"
-    , "        TotalLight += CalcPointLight(i, Normal);"
-    , "    }"
-    , ""
-    , "    FragColor = texture2D(gSampler, TexCoord0.xy) * TotalLight;"
-    , "}"
-    ]
-
 data DirectionLight =
     DirectionLight
     { ambientColor     :: !(Vertex3 GLfloat)
@@ -206,8 +81,8 @@ data PointLightLoc =
 initLightingTechnique :: IO LightingTechnique
 initLightingTechnique = do
     program <- createProgram
-    addShader program vertexShader VertexShader
-    addShader program fragmentShader FragmentShader
+    addShader program "tutorial20/lighting.vs" VertexShader
+    addShader program "tutorial20/lighting.fs" FragmentShader
     finalize program
 
     wvpLoc <- getUniformLocation program "gWVP"
@@ -250,8 +125,8 @@ pointLightLoc :: Program -> Int -> IO PointLightLoc
 pointLightLoc program index = do
     lColor            <- loc "Base.Color"
     lAmbientIntensity <- loc "Base.AmbientIntensity"
-    lDiffuseIntensity <- loc "Position"
-    lPosition         <- loc "Base.DiffuseIntensity"
+    lPosition         <- loc "Position"
+    lDiffuseIntensity <- loc "Base.DiffuseIntensity"
     lConstant         <- loc "Atten.Constant"
     lLinear           <- loc "Atten.Linear"
     lExp              <- loc "Atten.Exp"
@@ -265,8 +140,9 @@ pointLightLoc program index = do
         , plExpLoc              = lExp
         }
   where
-    loc field = getUniformLocation program
-        ("gEyeWorldPos[" ++ show index ++ "]." ++ field)
+    loc field = do
+        putStrLn ("gPointLights[" ++ show index ++ "]." ++ field)
+        getUniformLocation program ("gPointLights[" ++ show index ++ "]." ++ field)
 
 setLightingWVP :: LightingTechnique -> [[GLfloat]] -> IO ()
 setLightingWVP LightingTechnique{..} mat = uniformMat lWVPLoc $= mat

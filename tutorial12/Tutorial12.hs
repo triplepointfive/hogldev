@@ -123,8 +123,8 @@ compileShaders :: IO UniformLocation
 compileShaders = do
     shaderProgram <- createProgram
 
-    addShader shaderProgram vertexShader VertexShader
-    addShader shaderProgram fragmentShader FragmentShader
+    addShader shaderProgram "tutorial12/shader.vs" VertexShader
+    addShader shaderProgram "tutorial12/shader.fs" FragmentShader
 
     linkProgram shaderProgram
     linkStatus shaderProgram >>= \ status -> unless status $ do
@@ -141,8 +141,9 @@ compileShaders = do
     currentProgram $= Just shaderProgram
     uniformLocation shaderProgram "gWorld"
 
-addShader :: Program -> String -> ShaderType -> IO ()
-addShader shaderProgram shaderText shaderType = do
+addShader :: Program -> FilePath -> ShaderType -> IO ()
+addShader shaderProgram shaderFile shaderType = do
+    shaderText <- readFile shaderFile
     shaderObj <- createShader shaderType
     shaderSourceBS shaderObj $= packUtf8 shaderText
 

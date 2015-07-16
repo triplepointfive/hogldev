@@ -9,31 +9,6 @@ import           System.Exit (exitFailure)
 
 import           Hogldev.Utils (bufferOffset)
 
-vertexShader = unlines
-    [ "#version 330"
-    , ""
-    , "layout (location = 0) in vec3 Position;"
-    , ""
-    , "void main()"
-    , "{"
-    , "  gl_Position = vec4("
-    , "    0.5 * Position.x,"
-    , "    0.5 * Position.y,"
-    , "    Position.z, 1.0);"
-    , "}"
-    ]
-
-fragmentShader = unlines
-    [ "#version 330"
-    , ""
-    , "out vec4 FragColor;"
-    , ""
-    , "void main()"
-    , "{"
-    , "  FragColor = vec4(1.0, 0.0, 0.0, 1.0);"
-    , "}"
-    ]
-
 main :: IO ()
 main = do
     getArgsAndInitialize
@@ -75,8 +50,8 @@ compileShaders :: IO ()
 compileShaders = do
     shaderProgram <- createProgram
 
-    addShader shaderProgram vertexShader VertexShader
-    addShader shaderProgram fragmentShader FragmentShader
+    addShader shaderProgram "tutorial04/shader.vs" VertexShader
+    addShader shaderProgram "tutorial04/shader.fs" FragmentShader
 
     linkProgram shaderProgram
     linkStatus shaderProgram >>= \ status -> unless status $ do
@@ -92,8 +67,9 @@ compileShaders = do
 
     currentProgram $= Just shaderProgram
 
-addShader :: Program -> String -> ShaderType -> IO ()
-addShader shaderProgram shaderText shaderType = do
+addShader :: Program -> FilePath -> ShaderType -> IO ()
+addShader shaderProgram shaderFile shaderType = do
+    shaderText <- readFile shaderFile
     shaderObj <- createShader shaderType
     shaderSourceBS shaderObj $= packUtf8 shaderText
 
