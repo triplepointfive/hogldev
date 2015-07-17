@@ -43,7 +43,7 @@ main = do
     initialDisplayMode $= [DoubleBuffered, RGBAMode]
     initialWindowSize $= Size windowWidth windowHeight
     initialWindowPosition $= Position 100 100
-    createWindow "Tutorial 20"
+    createWindow "Tutorial 21"
 
     frontFace $= CW
     cullFace $= Just Front
@@ -77,7 +77,7 @@ main = do
         { ambientColor     = (Vertex3 1.0 1.0 1.0)
         , ambientIntensity = 0.0
         , diffuseDirection = (Vertex3 1.0 (-1.0) 0.0)
-        , diffuseIntensity = 0.05
+        , diffuseIntensity = 0.01
         }
     indices :: [GLuint]
     indices = [ 0, 1, 2
@@ -172,35 +172,54 @@ renderSceneCB vbo ibo effect dirLight gScale cameraRef texture = do
     camera <- readIORef cameraRef
     directionLight <- readIORef dirLight
 
-    let pointLights =
+
+    let spotLights =
+          [ DirectionalLight
+            { dAmbientColor     = Vertex3 0 1 1
+            , dAmbientIntensity = 0
+            , dDiffuseIntensity = 0.9
+            , dPosition         = vecToVer (cameraPos camera)
+            , dConstant         = 1
+            , dLinear           = 0.1
+            , dExp              = 0
+            , dDirection        = vecToVer (cameraTarget camera)
+            , dCutOff           = 10
+            }
+          , DirectionalLight
+            { dAmbientColor     = Vertex3 1 1 1
+            , dAmbientIntensity = 0
+            , dDiffuseIntensity = 0.9
+            , dPosition         = Vertex3 5 3 10
+            , dConstant         = 1
+            , dLinear           = 0.1
+            , dExp              = 0
+            , dDirection        = Vertex3 0 (-1) 0
+            , dCutOff           = 20
+            }
+          ]
+        pointLights =
           [ PointLight
-            { pAmbientColor     = Vertex3 1 0 0
+            { pAmbientColor     = Vertex3 1 0.5 0
             , pAmbientIntensity = 0
-            , pDiffuseIntensity = 0.5
-            , pPosition         = Vertex3 (sin (gScaleVal) * 10) 1 (cos (gScaleVal) * 10)
+            , pDiffuseIntensity = 0.25
+            , pPosition         = Vertex3 3 1 ((cos (gScaleVal) + 1) * 5)
             , pConstant         = 1
             , pLinear           = 0.1
             , pExp              = 0
             }
           , PointLight
-            { pAmbientColor     = Vertex3 0 1 0
+            { pAmbientColor     = Vertex3 0 0.5 1
             , pAmbientIntensity = 0
-            , pDiffuseIntensity = 0.5
-            , pPosition         = Vertex3 (sin (gScaleVal + 2.1) * 10) 1 (cos (gScaleVal + 2.1) * 10)
-            , pConstant         = 1
-            , pLinear           = 0.1
-            , pExp              = 0
-            }
-          , PointLight
-            { pAmbientColor     = Vertex3 0 0 1
-            , pAmbientIntensity = 0
-            , pDiffuseIntensity = 0.5
-            , pPosition         = Vertex3 (sin (gScaleVal + 4.2) * 10) 0 (cos (gScaleVal + 4.2) * 10)
+            , pDiffuseIntensity = 0.25
+            , pPosition         = Vertex3 7 1 ((sin (gScaleVal) + 1) * 5)
             , pConstant         = 1
             , pLinear           = 0.1
             , pExp              = 0
             }
           ]
+
+    setPointLights effect 2 pointLights
+    setSpotLights effect 2 spotLights
 
     setLightingWVP effect $ getTrans
         WVPPipeline {
@@ -217,7 +236,6 @@ renderSceneCB vbo ibo effect dirLight gScale cameraRef texture = do
             rotateInfo = Vector3 0 gScaleVal 0
         }
     setDirectionalLight effect directionLight
-    setPointLights effect 3 pointLights
 
     setEyeWorldPos effect (cameraPos camera)
     setMatSpecularPower effect 32
@@ -264,3 +282,4 @@ renderSceneCB vbo ibo effect dirLight gScale cameraRef texture = do
     vNormals = AttribLocation 2
     vertexSize = sizeOf $
         TNVertex (Vertex3 0 0 0) (TexCoord2 0 0) (Vertex3 0 0 0)
+    vecToVer (Vector3 x y z) = Vertex3 x y z
