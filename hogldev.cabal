@@ -15,6 +15,7 @@ library
                      , common
   exposed-modules:     Hogldev.Math3D
                      , Hogldev.Pipeline
+                     , Hogldev.LightingTechnique
                      , Hogldev.Utils
                      , Hogldev.Camera
                      , Hogldev.Technique
@@ -264,7 +265,7 @@ executable tutorial21
 
 executable tutorial22
   main-is:             Tutorial22.hs
-  other-modules:       LightingTechnique
+  other-modules:       Mesh
   build-depends:       base >=4.6 && <4.9
                      , GLUT
                      , OpenGL

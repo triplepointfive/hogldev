@@ -24,7 +24,7 @@ import           Hogldev.Technique
 
 import           Data.Maybe (isNothing, fromJust)
 
-import           LightingTechnique
+import           Hogldev.LightingTechnique
 
 windowWidth = 1024
 windowHeight = 768
@@ -172,7 +172,6 @@ renderSceneCB vbo ibo effect dirLight gScale cameraRef texture = do
     camera <- readIORef cameraRef
     directionLight <- readIORef dirLight
 
-
     let spotLights =
           [ DirectionalLight
             { dAmbientColor     = Vertex3 0 1 1
@@ -241,45 +240,17 @@ renderSceneCB vbo ibo effect dirLight gScale cameraRef texture = do
     setMatSpecularPower effect 32
     setMaterialSpecularIntensity effect 1
 
-    vertexAttribArray vPosition $= Enabled
-    vertexAttribArray vTextCoord $= Enabled
-    vertexAttribArray vNormals $= Enabled
 
-    bindBuffer ArrayBuffer $= Just vbo
 
-    vertexAttribPointer vPosition $=
-        ( ToFloat
-        , VertexArrayDescriptor 3 Float (fromIntegral vertexSize)
-          (bufferOffset 0)
-        )
-    vertexAttribPointer vTextCoord $=
-        ( ToFloat
-        , VertexArrayDescriptor 2 Float (fromIntegral vertexSize)
-          (bufferOffset (sizeOf (Vertex3 0 0 0 :: Vertex3 GLfloat)))
-        )
-    vertexAttribPointer vNormals $=
-        ( ToFloat
-        , VertexArrayDescriptor 3 Float (fromIntegral vertexSize)
-          (bufferOffset (
-              sizeOf (Vertex3 0 0 0 :: Vertex3 GLfloat)
-            + sizeOf (TexCoord2 0 0 :: TexCoord2 GLfloat))
-          )
-        )
 
-    bindBuffer ElementArrayBuffer $= Just ibo
 
-    textureBind texture (TextureUnit 0)
-    drawIndexedTris 2
 
-    vertexAttribArray vPosition $= Disabled
-    vertexAttribArray vTextCoord $= Disabled
-    vertexAttribArray vNormals $= Disabled
+
+
+
+
+
 
     swapBuffers
  where
-    vPosition = AttribLocation 0
-    vTextCoord = AttribLocation 1
-    vNormals = AttribLocation 2
-    vertexSize = sizeOf $
-        TNVertex (Vertex3 0 0 0) (TexCoord2 0 0) (Vertex3 0 0 0)
     vecToVer (Vector3 x y z) = Vertex3 x y z

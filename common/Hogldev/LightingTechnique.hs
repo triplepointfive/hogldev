@@ -1,5 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
-module LightingTechnique (
+module Hogldev.LightingTechnique (
     LightingTechnique(..)
   , DirectionLight(..)
   , PointLight(..)
