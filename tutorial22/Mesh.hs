@@ -9,7 +9,11 @@ import           Control.Monad (when)
 import           Data.Foldable (forM_)
 import           Data.Maybe (fromJust, isJust)
 import           Foreign.Storable (sizeOf)
+import           Foreign.Marshal.Array (withArray)
+import           Text.Printf (printf)
 
+import qualified Data.Vector as V
+import qualified Codec.Soten as S
 import           Graphics.GLUtil
 import           Graphics.Rendering.OpenGL
 
@@ -25,14 +29,75 @@ data MeshEntry = MeshEntry
   }
 
 data Mesh = Mesh
-  { entries :: [MeshEntry]
-  , textures :: [Texture]
+  { entries  :: ![MeshEntry]
+  , textures :: ![Texture]
   }
+
+    -- indices :: [GLuint]
+    -- indices = [ 0, 1, 2
+              -- , 0, 2, 3
+              -- ]
+    -- vertices :: [TNVertex]
+    -- vertices =
+        -- [ TNVertex (Vertex3 (-10) (-2) (-10)) (TexCoord2 0 0) normal
+        -- , TNVertex (Vertex3    10 (-2) (-10)) (TexCoord2 1 0) normal
+        -- , TNVertex (Vertex3    10 (-2)    10) (TexCoord2 1 1) normal
+        -- , TNVertex (Vertex3 (-10) (-2)    10) (TexCoord2 0 1) normal
+        -- ]
 
 vertexSize = sizeOf (TNVertex (Vertex3 0 0 0) (TexCoord2 0 0) (Vertex3 0 0 0))
 
 loadMesh :: FilePath -> IO Mesh
-loadMesh fileName = undefined
+loadMesh fileName = S.readModelFile fileName >>= either
+    (error . printf "Error parsing '%s': '%s'" fileName)
+    (initFromScene fileName)
+
+initFromScene :: FilePath -> S.Scene -> IO Mesh
+initFromScene fileName scene = do
+    meshEntries <- V.mapM newMeshEntry (S._sceneMeshes scene)
+    meshTextures <- initMaterials scene fileName
+    return Mesh { entries = V.toList meshEntries, textures = meshTextures }
+
+initMaterials :: S.Scene -> FilePath -> IO [Texture]
+initMaterials = undefined
+
+newMeshEntry :: S.Mesh -> IO MeshEntry
+newMeshEntry = undefined
+
+initMeshEntry :: [TNVertex] -> [GLuint] -> IO MeshEntry
+initMeshEntry vertices indices = do
+    vbo <- createVertexBuffer vertices
+    ibo <- createIndexBuffer indices
+    return MeshEntry
+        { vb            = vbo
+        , ib            = ibo
+        , numIndices    = fromIntegral (length indices)
+        , materialIndex = Nothing
+        }
+
+createVertexBuffer :: [TNVertex] -> IO BufferObject
+createVertexBuffer vertices = do
+    vbo <- genObjectName
+    bindBuffer ArrayBuffer $= Just vbo
+    withArray vertices $ \ptr ->
+        bufferData ArrayBuffer $= (size, ptr, StaticDraw)
+    return vbo
+  where
+    numVertices = length vertices
+    vertexSize  = sizeOf (head vertices)
+    size        = fromIntegral (numVertices * vertexSize)
+
+createIndexBuffer :: [GLuint] -> IO BufferObject
+createIndexBuffer indices = do
+    ibo <- genObjectName
+    bindBuffer ElementArrayBuffer $= Just ibo
+    withArray indices $ \ptr ->
+        bufferData ElementArrayBuffer $= (size, ptr, StaticDraw)
+    return ibo
+  where
+    numIndices = length indices
+    indexSize  = sizeOf (head indices)
+    size       = fromIntegral (numIndices * indexSize)
 
 renderMesh :: Mesh -> IO ()
 renderMesh Mesh{..} = do

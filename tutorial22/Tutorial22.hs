@@ -2,10 +2,10 @@ module Main where
 
 import           Control.Monad (when)
 import           Data.IORef
+import           Data.Maybe (isNothing, fromJust)
 import           Graphics.Rendering.OpenGL
 import           Graphics.GLUtil
 import           Graphics.UI.GLUT hiding (exit)
-import           Foreign.Marshal.Array (withArray)
 import           Foreign.Storable (sizeOf)
 import           System.Exit (exitFailure, exitSuccess)
 
@@ -22,9 +22,8 @@ import           Hogldev.Texture
 import           Hogldev.Vertex (TNVertex(..))
 import           Hogldev.Technique
 
-import           Data.Maybe (isNothing, fromJust)
-
 import           Hogldev.LightingTechnique
+import           Mesh
 
 windowWidth = 1024
 windowHeight = 768
@@ -48,9 +47,6 @@ main = do
     frontFace $= CW
     cullFace $= Just Front
 
-    vbo <- createVertexBuffer
-    ibo <- createIndexBuffer indices
-
     texture <- textureLoad "assets/test.png" Texture2D
     when (isNothing texture) exitFailure
 
@@ -64,7 +60,9 @@ main = do
 
     pointerPosition $= mousePos
 
-    initializeGlutCallbacks vbo ibo effect dirLight gScale cameraRef
+    mesh <- loadMesh "assets/phoenix_ugv.md2"
+
+    initializeGlutCallbacks mesh effect dirLight gScale cameraRef
         (fromJust texture)
     clearColor $= Color4 0 0 0 0
 
@@ -79,22 +77,17 @@ main = do
         , diffuseDirection = (Vertex3 1.0 (-1.0) 0.0)
         , diffuseIntensity = 0.01
         }
-    indices :: [GLuint]
-    indices = [ 0, 1, 2
-              , 0, 2, 3
-              ]
 
-initializeGlutCallbacks :: BufferObject
-                        -> BufferObject
+initializeGlutCallbacks :: Mesh
                         -> LightingTechnique
                         -> IORef DirectionLight
                         -> IORef GLfloat
                         -> IORef Camera
                         -> Texture
                         -> IO ()
-initializeGlutCallbacks vbo ibo effect dirLight gScale cameraRef texture = do
+initializeGlutCallbacks mesh effect dirLight gScale cameraRef texture = do
     displayCallback $=
-        renderSceneCB vbo ibo effect dirLight gScale cameraRef texture
+        renderSceneCB mesh effect dirLight gScale cameraRef texture
     idleCallback    $= Just (idleCB gScale cameraRef)
     specialCallback $= Just (specialKeyboardCB cameraRef)
     keyboardCallback $= Just (keyboardCB dirLight)
@@ -124,48 +117,14 @@ idleCB gScale cameraRef = do
   cameraRef $~! cameraOnRender
   postRedisplay Nothing
 
-createVertexBuffer :: IO BufferObject
-createVertexBuffer = do
-    vbo <- genObjectName
-    bindBuffer ArrayBuffer $= Just vbo
-    withArray vertices $ \ptr ->
-        bufferData ArrayBuffer $= (size, ptr, StaticDraw)
-    return vbo
-  where
-    vertices :: [TNVertex]
-    vertices =
-        [ TNVertex (Vertex3 (-10) (-2) (-10)) (TexCoord2 0 0) normal
-        , TNVertex (Vertex3    10 (-2) (-10)) (TexCoord2 1 0) normal
-        , TNVertex (Vertex3    10 (-2)    10) (TexCoord2 1 1) normal
-        , TNVertex (Vertex3 (-10) (-2)    10) (TexCoord2 0 1) normal
-        ]
-
-    numVertices = length vertices
-    vertexSize  = sizeOf (head vertices)
-    size        = fromIntegral (numVertices * vertexSize)
-    normal      = Vertex3 0 1 0
-
-createIndexBuffer :: [GLuint] -> IO BufferObject
-createIndexBuffer indices = do
-    ibo <- genObjectName
-    bindBuffer ElementArrayBuffer $= Just ibo
-    withArray indices $ \ptr ->
-        bufferData ElementArrayBuffer $= (size, ptr, StaticDraw)
-    return ibo
-  where
-    numIndices = length indices
-    indexSize  = sizeOf (head indices)
-    size       = fromIntegral (numIndices * indexSize)
-
-renderSceneCB :: BufferObject
-              -> BufferObject
+renderSceneCB :: Mesh
               -> LightingTechnique
               -> IORef DirectionLight
               -> IORef GLfloat
               -> IORef Camera
               -> Texture
               -> DisplayCallback
-renderSceneCB vbo ibo effect dirLight gScale cameraRef texture = do
+renderSceneCB mesh effect dirLight gScale cameraRef texture = do
     cameraRef $~! cameraOnRender
     clear [ColorBuffer]
     gScaleVal <- readIORef gScale
@@ -240,16 +199,7 @@ renderSceneCB vbo ibo effect dirLight gScale cameraRef texture = do
     setMatSpecularPower effect 32
     setMaterialSpecularIntensity effect 1
 
-
-
-
-
-
-
-
-
-
-
+    renderMesh mesh
 
     swapBuffers
  where
