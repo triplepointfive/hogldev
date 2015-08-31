@@ -7,10 +7,11 @@ module Mesh (
 
 import           Control.Monad (when)
 import           Data.Foldable (forM_)
-import           Data.Maybe (fromJust, isJust)
+import           Data.Maybe (fromJust, isJust, fromMaybe)
 import           Foreign.Storable (sizeOf)
 import           Foreign.Marshal.Array (withArray)
 import           Text.Printf (printf)
+import           System.FilePath (splitFileName)
 
 import qualified Data.Vector as V
 import qualified Codec.Soten as S
@@ -44,6 +45,8 @@ data Mesh = Mesh
         -- , TNVertex (Vertex3    10 (-2)    10) (TexCoord2 1 1) normal
         -- , TNVertex (Vertex3 (-10) (-2)    10) (TexCoord2 0 1) normal
         -- ]
+    -- texture <- textureLoad "assets/test.png" Texture2D
+    -- when (isNothing texture) exitFailure
 
 vertexSize = sizeOf (TNVertex (Vertex3 0 0 0) (TexCoord2 0 0) (Vertex3 0 0 0))
 
@@ -58,8 +61,21 @@ initFromScene fileName scene = do
     meshTextures <- initMaterials scene fileName
     return Mesh { entries = V.toList meshEntries, textures = meshTextures }
 
+-- TODO: make it safe / add meaningfull fail message
 initMaterials :: S.Scene -> FilePath -> IO [Texture]
-initMaterials = undefined
+initMaterials S.Scene{..} fileName = map fromJust <$> V.toList <$>
+    V.mapM readTexture _sceneMaterials
+  where
+    readTexture S.Material{..} = textureLoad textureName Texture2D
+      where
+        textureName = V.foldl findTexturePropery
+            "assets/white.png" _materialProperties
+
+        findTexturePropery :: String -> S.MaterialProperty -> String
+        findTexturePropery _ (S.MaterialTexture S.TextureTypeDiffuse name) = name
+        findTexturePropery name _ = name
+
+    (dir, _) = splitFileName fileName
 
 newMeshEntry :: S.Mesh -> IO MeshEntry
 newMeshEntry = undefined

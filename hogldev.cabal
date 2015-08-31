@@ -274,6 +274,7 @@ executable tutorial22
                      , split
                      , soten
                      , vector
+                     , filepath
   hs-source-dirs:      tutorial22/
   default-language:    Haskell2010
   ghc-options:         -W

@@ -76,9 +76,9 @@ main = do
     mousePos = Position (windowWidth `div` 2) (windowHeight `div` 2)
     directionLight =
         DirectionLight
-        { ambientColor     = (Vertex3 1.0 1.0 1.0)
+        { ambientColor     = Vertex3 1.0 1.0 1.0
         , ambientIntensity = 0.00
-        , diffuseDirection = (Vertex3 1.0 0.0 0.0)
+        , diffuseDirection = Vertex3 1.0 0.0 0.0
         , diffuseIntensity = 0.75
         }
     indices :: [GLuint]
@@ -105,13 +105,13 @@ initializeGlutCallbacks vbo ibo effect dirLight gScale cameraRef texture = do
 
 keyboardCB :: IORef DirectionLight -> KeyboardCallback
 keyboardCB _ 'q' _ = exitSuccess
-keyboardCB dirLight 'a' _ = do
+keyboardCB dirLight 'a' _ =
     dirLight $~! changeAmbIntensity (+ 0.05)
-keyboardCB dirLight 's' _ = do
+keyboardCB dirLight 's' _ =
     dirLight $~! changeAmbIntensity (\ x -> x - 0.05)
-keyboardCB dirLight 'z' _ = do
+keyboardCB dirLight 'z' _ =
     dirLight $~! changeDiffIntensity (+ 0.05)
-keyboardCB dirLight 'x' _ = do
+keyboardCB dirLight 'x' _ =
     dirLight $~! changeDiffIntensity (\ x -> x - 0.05)
 keyboardCB _ _ _ = return ()
 
@@ -179,7 +179,7 @@ calcNormals indices vertices = zipWith addNormal vertices normals
     replaceAtIndex :: Integral i => i -> a -> [a] -> [a]
     replaceAtIndex n item ls = a ++ (item:b)
       where
-        (a, (_:b)) = genericSplitAt n ls
+        (a, _ : b) = genericSplitAt n ls
 
 createIndexBuffer :: [GLuint] -> IO BufferObject
 createIndexBuffer indices = do

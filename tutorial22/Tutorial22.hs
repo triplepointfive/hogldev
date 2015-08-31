@@ -1,25 +1,18 @@
 module Main where
 
-import           Control.Monad (when)
 import           Data.IORef
-import           Data.Maybe (isNothing, fromJust)
 import           Graphics.Rendering.OpenGL
-import           Graphics.GLUtil
 import           Graphics.UI.GLUT hiding (exit)
-import           Foreign.Storable (sizeOf)
-import           System.Exit (exitFailure, exitSuccess)
+import           System.Exit (exitSuccess)
 
 import           Hogldev.Pipeline (
                     Pipeline(..), getTrans,
                     PersProj(..)
                  )
-import           Hogldev.Utils (bufferOffset)
 import           Hogldev.Camera (
                     Camera(..), cameraOnKeyboard,
                     initCamera, cameraOnMouse, cameraOnRender
                  )
-import           Hogldev.Texture
-import           Hogldev.Vertex (TNVertex(..))
 import           Hogldev.Technique
 
 import           Hogldev.LightingTechnique
@@ -47,9 +40,6 @@ main = do
     frontFace $= CW
     cullFace $= Just Front
 
-    texture <- textureLoad "assets/test.png" Texture2D
-    when (isNothing texture) exitFailure
-
     gScale <- newIORef 0.0
     cameraRef <- newIORef newCamera
     dirLight <- newIORef directionLight
@@ -63,7 +53,6 @@ main = do
     mesh <- loadMesh "assets/phoenix_ugv.md2"
 
     initializeGlutCallbacks mesh effect dirLight gScale cameraRef
-        (fromJust texture)
     clearColor $= Color4 0 0 0 0
 
     mainLoop
@@ -72,9 +61,9 @@ main = do
     mousePos = Position (windowWidth `div` 2) (windowHeight `div` 2)
     directionLight =
         DirectionLight
-        { ambientColor     = (Vertex3 1.0 1.0 1.0)
+        { ambientColor     = Vertex3 1.0 1.0 1.0
         , ambientIntensity = 0.0
-        , diffuseDirection = (Vertex3 1.0 (-1.0) 0.0)
+        , diffuseDirection = Vertex3 1.0 (-1.0) 0.0
         , diffuseIntensity = 0.01
         }
 
@@ -83,11 +72,10 @@ initializeGlutCallbacks :: Mesh
                         -> IORef DirectionLight
                         -> IORef GLfloat
                         -> IORef Camera
-                        -> Texture
                         -> IO ()
-initializeGlutCallbacks mesh effect dirLight gScale cameraRef texture = do
+initializeGlutCallbacks mesh effect dirLight gScale cameraRef = do
     displayCallback $=
-        renderSceneCB mesh effect dirLight gScale cameraRef texture
+        renderSceneCB mesh effect dirLight gScale cameraRef
     idleCallback    $= Just (idleCB gScale cameraRef)
     specialCallback $= Just (specialKeyboardCB cameraRef)
     keyboardCallback $= Just (keyboardCB dirLight)
@@ -95,13 +83,13 @@ initializeGlutCallbacks mesh effect dirLight gScale cameraRef texture = do
 
 keyboardCB :: IORef DirectionLight -> KeyboardCallback
 keyboardCB _ 'q' _ = exitSuccess
-keyboardCB dirLight 'a' _ = do
+keyboardCB dirLight 'a' _ =
     dirLight $~! changeAmbIntensity (+ 0.05)
-keyboardCB dirLight 's' _ = do
+keyboardCB dirLight 's' _ =
     dirLight $~! changeAmbIntensity (\ x -> x - 0.05)
-keyboardCB dirLight 'z' _ = do
+keyboardCB dirLight 'z' _ =
     dirLight $~! changeDiffIntensity (+ 0.05)
-keyboardCB dirLight 'x' _ = do
+keyboardCB dirLight 'x' _ =
     dirLight $~! changeDiffIntensity (\ x -> x - 0.05)
 keyboardCB _ _ _ = return ()
 
@@ -122,9 +110,8 @@ renderSceneCB :: Mesh
               -> IORef DirectionLight
               -> IORef GLfloat
               -> IORef Camera
-              -> Texture
               -> DisplayCallback
-renderSceneCB mesh effect dirLight gScale cameraRef texture = do
+renderSceneCB mesh effect dirLight gScale cameraRef = do
     cameraRef $~! cameraOnRender
     clear [ColorBuffer]
     gScaleVal <- readIORef gScale
@@ -160,7 +147,7 @@ renderSceneCB mesh effect dirLight gScale cameraRef texture = do
             { pAmbientColor     = Vertex3 1 0.5 0
             , pAmbientIntensity = 0
             , pDiffuseIntensity = 0.25
-            , pPosition         = Vertex3 3 1 ((cos (gScaleVal) + 1) * 5)
+            , pPosition         = Vertex3 3 1 ((cos gScaleVal + 1) * 5)
             , pConstant         = 1
             , pLinear           = 0.1
             , pExp              = 0
@@ -169,7 +156,7 @@ renderSceneCB mesh effect dirLight gScale cameraRef texture = do
             { pAmbientColor     = Vertex3 0 0.5 1
             , pAmbientIntensity = 0
             , pDiffuseIntensity = 0.25
-            , pPosition         = Vertex3 7 1 ((sin (gScaleVal) + 1) * 5)
+            , pPosition         = Vertex3 7 1 ((sin gScaleVal + 1) * 5)
             , pConstant         = 1
             , pLinear           = 0.1
             , pExp              = 0

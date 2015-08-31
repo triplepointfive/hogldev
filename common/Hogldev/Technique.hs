@@ -43,9 +43,4 @@ enableTechnique :: Program -> IO ()
 enableTechnique shaderProgram = currentProgram $= Just shaderProgram
 
 getUniformLocation :: Program -> String -> IO UniformLocation
-getUniformLocation proram name = do
-   loc <- uniformLocation proram name
-   return loc
-   -- if UniformLocation 0 == loc && name /= "gDirectionalLight.Base.AmbientIntensity"
-   --    then error $ "Unable to retrive location for uniform variable: " ++ name
-   --    else return loc
+getUniformLocation = uniformLocation
