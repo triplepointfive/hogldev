@@ -169,7 +169,7 @@ renderSceneCB mesh effect dirLight gScale cameraRef = do
     setLightingWVP effect $ getTrans
         WVPPipeline {
             worldInfo  = Vector3 0 0 5,
-            scaleInfo  = Vector3 1 1 1,
+            scaleInfo  = Vector3 0.1 0.1 0.1,
             rotateInfo = Vector3 0 gScaleVal 0,
             persProj   = persProjection,
             pipeCamera = camera
@@ -177,7 +177,7 @@ renderSceneCB mesh effect dirLight gScale cameraRef = do
     setLightingWorldMatrix effect $ getTrans
         WPipeline {
             worldInfo  = Vector3 0 0 5,
-            scaleInfo  = Vector3 1 1 1,
+            scaleInfo  = Vector3 0.1 0.1 0.1,
             rotateInfo = Vector3 0 gScaleVal 0
         }
     setDirectionalLight effect directionLight

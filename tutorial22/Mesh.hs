@@ -7,7 +7,7 @@ module Mesh (
 
 import           Control.Monad (when)
 import           Data.Foldable (forM_)
-import           Data.Maybe (fromJust, isJust, fromMaybe)
+import           Data.Maybe (fromJust, isJust)
 import           Foreign.Storable (sizeOf)
 import           Foreign.Marshal.Array (withArray)
 import           Text.Printf (printf)
@@ -72,13 +72,32 @@ initMaterials S.Scene{..} fileName = map fromJust <$> V.toList <$>
             "assets/white.png" _materialProperties
 
         findTexturePropery :: String -> S.MaterialProperty -> String
-        findTexturePropery _ (S.MaterialTexture S.TextureTypeDiffuse name) = name
+        findTexturePropery _ (S.MaterialTexture S.TextureTypeDiffuse name) =
+            dir ++ name
         findTexturePropery name _ = name
 
     (dir, _) = splitFileName fileName
 
 newMeshEntry :: S.Mesh -> IO MeshEntry
-newMeshEntry = undefined
+newMeshEntry mesh = initMeshEntry vertices indices
+    where
+      verticesCount = V.length (S._meshVertices mesh)
+      meshTextures = if S.hasTextureCoords mesh 0
+          then S._meshTextureCoords mesh
+          else V.replicate verticesCount (S.V3 0 0 0)
+      vertices = V.toList $ V.zipWith3 toVert
+          (S._meshVertices mesh)
+          (S._meshNormals mesh)
+          meshTextures
+      toVert :: S.V3 Float -> S.V3 Float -> S.V3 Float -> TNVertex
+      toVert (S.V3 px py pz) (S.V3 nx ny nz) (S.V3 tx ty _) =
+          TNVertex pos text norm
+        where
+          pos  = Vertex3 (realToFrac px) (realToFrac py) (realToFrac pz)
+          text = TexCoord2 (realToFrac tx) (realToFrac ty)
+          norm = Vertex3 (realToFrac nx) (realToFrac ny) (realToFrac nz)
+      indices  = map fromIntegral $ V.toList $
+          V.concatMap S._faceIndices (S._meshFaces mesh)
 
 initMeshEntry :: [TNVertex] -> [GLuint] -> IO MeshEntry
 initMeshEntry vertices indices = do
