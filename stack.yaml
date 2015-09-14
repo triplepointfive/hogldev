@@ -1,0 +1,8 @@
+flags: {}
+packages:
+- '.'
+extra-deps:
+- GLUtil-0.8.7
+- hpp-0.1.0.0
+- soten-0.0.1
+resolver: nightly-2015-09-13
