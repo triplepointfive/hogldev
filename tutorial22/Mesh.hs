@@ -34,26 +34,14 @@ data Mesh = Mesh
   , textures :: ![Texture]
   }
 
-    -- indices :: [GLuint]
-    -- indices = [ 0, 1, 2
-              -- , 0, 2, 3
-              -- ]
-    -- vertices :: [TNVertex]
-    -- vertices =
-        -- [ TNVertex (Vertex3 (-10) (-2) (-10)) (TexCoord2 0 0) normal
-        -- , TNVertex (Vertex3    10 (-2) (-10)) (TexCoord2 1 0) normal
-        -- , TNVertex (Vertex3    10 (-2)    10) (TexCoord2 1 1) normal
-        -- , TNVertex (Vertex3 (-10) (-2)    10) (TexCoord2 0 1) normal
-        -- ]
-    -- texture <- textureLoad "assets/test.png" Texture2D
-    -- when (isNothing texture) exitFailure
-
 vertexSize = sizeOf (TNVertex (Vertex3 0 0 0) (TexCoord2 0 0) (Vertex3 0 0 0))
 
 loadMesh :: FilePath -> IO Mesh
-loadMesh fileName = S.readModelFile fileName >>= either
+loadMesh fileName = S.readModelFileWithProcess fileName processes >>= either
     (error . printf "Error parsing '%s': '%s'" fileName)
     (initFromScene fileName)
+  where
+    processes = [S.Triangulate, S.GenSmoothNormals, S.FlipUVs]
 
 initFromScene :: FilePath -> S.Scene -> IO Mesh
 initFromScene fileName scene = do

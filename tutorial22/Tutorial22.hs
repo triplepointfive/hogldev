@@ -32,13 +32,14 @@ persProjection = PersProj
 main :: IO ()
 main = do
     getArgsAndInitialize
-    initialDisplayMode $= [DoubleBuffered, RGBAMode]
+    initialDisplayMode $= [DoubleBuffered, RGBAMode, WithDepthBuffer]
     initialWindowSize $= Size windowWidth windowHeight
     initialWindowPosition $= Position 100 100
     createWindow "Tutorial 22"
 
-    frontFace $= CW
-    cullFace $= Just Front
+    -- frontFace $= CW
+    -- cullFace $= Just Back
+    depthFunc $= Just Lequal
 
     gScale <- newIORef 0.0
     cameraRef <- newIORef newCamera
@@ -62,8 +63,8 @@ main = do
     directionLight =
         DirectionLight
         { ambientColor     = Vertex3 1.0 1.0 1.0
-        , ambientIntensity = 0.0
-        , diffuseDirection = Vertex3 1.0 (-1.0) 0.0
+        , ambientIntensity = 1.0
+        , diffuseDirection = Vertex3 1.0 0 1.0
         , diffuseIntensity = 0.01
         }
 
@@ -113,58 +114,10 @@ renderSceneCB :: Mesh
               -> DisplayCallback
 renderSceneCB mesh effect dirLight gScale cameraRef = do
     cameraRef $~! cameraOnRender
-    clear [ColorBuffer]
+    clear [ColorBuffer, DepthBuffer]
     gScaleVal <- readIORef gScale
     camera <- readIORef cameraRef
     directionLight <- readIORef dirLight
-
-    let spotLights =
-          [ DirectionalLight
-            { dAmbientColor     = Vertex3 0 1 1
-            , dAmbientIntensity = 0
-            , dDiffuseIntensity = 0.9
-            , dPosition         = vecToVer (cameraPos camera)
-            , dConstant         = 1
-            , dLinear           = 0.1
-            , dExp              = 0
-            , dDirection        = vecToVer (cameraTarget camera)
-            , dCutOff           = 10
-            }
-          , DirectionalLight
-            { dAmbientColor     = Vertex3 1 1 1
-            , dAmbientIntensity = 0
-            , dDiffuseIntensity = 0.9
-            , dPosition         = Vertex3 5 3 10
-            , dConstant         = 1
-            , dLinear           = 0.1
-            , dExp              = 0
-            , dDirection        = Vertex3 0 (-1) 0
-            , dCutOff           = 20
-            }
-          ]
-        pointLights =
-          [ PointLight
-            { pAmbientColor     = Vertex3 1 0.5 0
-            , pAmbientIntensity = 0
-            , pDiffuseIntensity = 0.25
-            , pPosition         = Vertex3 3 1 ((cos gScaleVal + 1) * 5)
-            , pConstant         = 1
-            , pLinear           = 0.1
-            , pExp              = 0
-            }
-          , PointLight
-            { pAmbientColor     = Vertex3 0 0.5 1
-            , pAmbientIntensity = 0
-            , pDiffuseIntensity = 0.25
-            , pPosition         = Vertex3 7 1 ((sin gScaleVal + 1) * 5)
-            , pConstant         = 1
-            , pLinear           = 0.1
-            , pExp              = 0
-            }
-          ]
-
-    setPointLights effect 2 pointLights
-    setSpotLights effect 2 spotLights
 
     setLightingWVP effect $ getTrans
         WVPPipeline {
@@ -183,11 +136,9 @@ renderSceneCB mesh effect dirLight gScale cameraRef = do
     setDirectionalLight effect directionLight
 
     setEyeWorldPos effect (cameraPos camera)
-    setMatSpecularPower effect 32
-    setMaterialSpecularIntensity effect 1
+    setMatSpecularPower effect 0
+    setMaterialSpecularIntensity effect 0
 
     renderMesh mesh
 
     swapBuffers
- where
-    vecToVer (Vector3 x y z) = Vertex3 x y z
