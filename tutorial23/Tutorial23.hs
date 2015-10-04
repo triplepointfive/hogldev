@@ -16,7 +16,9 @@ import           Hogldev.Camera (
 import           Hogldev.Technique
 
 import           Hogldev.LightingTechnique
+
 import           Mesh
+import           ShadowMapFBO
 
 windowWidth = 1024
 windowHeight = 768
@@ -114,31 +116,39 @@ renderSceneCB :: Mesh
               -> DisplayCallback
 renderSceneCB mesh effect dirLight gScale cameraRef = do
     cameraRef $~! cameraOnRender
-    clear [ColorBuffer, DepthBuffer]
     gScaleVal <- readIORef gScale
     camera <- readIORef cameraRef
-    directionLight <- readIORef dirLight
+    let shadowMapPass :: IO ()
+        shadowMapPass = do
+            bindForWriting shadowMapFBO
+            clear [DepthBuffer]
+            setShadowMapWVP effect $ getTrans
+                WVPPipeline {
+                    worldInfo  = Vector3 0 0 5,
+                    scaleInfo  = Vector3 0.1 0.1 0.1,
+                    rotateInfo = Vector3 0 gScaleVal 0,
+                    persProj   = persProjection,
+                    pipeCamera = camera
+                }
+            renderMesh mesh
+            bindFramebuffer defaultFramebufferObject
 
-    setLightingWVP effect $ getTrans
-        WVPPipeline {
-            worldInfo  = Vector3 0 0 5,
-            scaleInfo  = Vector3 0.1 0.1 0.1,
-            rotateInfo = Vector3 0 gScaleVal 0,
-            persProj   = persProjection,
-            pipeCamera = camera
-        }
-    setLightingWorldMatrix effect $ getTrans
-        WPipeline {
-            worldInfo  = Vector3 0 0 5,
-            scaleInfo  = Vector3 0.1 0.1 0.1,
-            rotateInfo = Vector3 0 gScaleVal 0
-        }
-    setDirectionalLight effect directionLight
+        renderPass :: IO ()
+        renderPass = do
+            clear [ColorBuffer, DepthBuffer]
+            directionLight <- readIORef dirLight
+            bindForReading shadowMapFBO (TextureUnit 0)
+            setShadowMapWVP effect $ getTrans
+                WVPPipeline {
+                    worldInfo  = Vector3 0 0 5,
+                    scaleInfo  = Vector3 0.1 0.1 0.1,
+                    rotateInfo = Vector3 0 gScaleVal 0,
+                    persProj   = persProjection,
+                    pipeCamera = camera
+                }
+            renderMesh quad
 
-    setEyeWorldPos effect (cameraPos camera)
-    setMatSpecularPower effect 0
-    setMaterialSpecularIntensity effect 0
-
-    renderMesh mesh
+    shadowMapPass
+    renderPass
 
     swapBuffers
