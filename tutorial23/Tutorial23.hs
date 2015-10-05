@@ -13,11 +13,8 @@ import           Hogldev.Camera (
                     Camera(..), cameraOnKeyboard,
                     initCamera, cameraOnMouse, cameraOnRender
                  )
-import           Hogldev.Technique
-
-import           Hogldev.LightingTechnique
-
 import           Mesh
+import           ShadowMapTechnique
 import           ShadowMapFBO
 
 windowWidth = 1024
@@ -45,56 +42,43 @@ main = do
 
     gScale <- newIORef 0.0
     cameraRef <- newIORef newCamera
-    dirLight <- newIORef directionLight
 
-    effect <- initLightingTechnique
-    enableTechnique (lProgram effect)
-    setLightingTextureUnit effect 0
+    shadowMapFBO <- initializeShadowMapFBO windowWidth windowHeight
+
+    effect <- initShadowMapTechnique
+    enableShadowMapTechnique effect
 
     pointerPosition $= mousePos
 
     mesh <- loadMesh "assets/phoenix_ugv.md2"
+    quad <- loadMesh "assets/quad.obj"
 
-    initializeGlutCallbacks mesh effect dirLight gScale cameraRef
+    initializeGlutCallbacks mesh quad shadowMapFBO effect  gScale cameraRef
     clearColor $= Color4 0 0 0 0
 
     mainLoop
   where
     newCamera = initCamera Nothing windowWidth windowHeight
     mousePos = Position (windowWidth `div` 2) (windowHeight `div` 2)
-    directionLight =
-        DirectionLight
-        { ambientColor     = Vertex3 1.0 1.0 1.0
-        , ambientIntensity = 1.0
-        , diffuseDirection = Vertex3 1.0 0 1.0
-        , diffuseIntensity = 0.01
-        }
 
 initializeGlutCallbacks :: Mesh
-                        -> LightingTechnique
-                        -> IORef DirectionLight
+                        -> Mesh
+                        -> ShadowMapFBO
+                        -> ShadowMapTechnique
                         -> IORef GLfloat
                         -> IORef Camera
                         -> IO ()
-initializeGlutCallbacks mesh effect dirLight gScale cameraRef = do
+initializeGlutCallbacks mesh quad shadowMapFBO effect gScale cameraRef = do
     displayCallback $=
-        renderSceneCB mesh effect dirLight gScale cameraRef
+        renderSceneCB mesh quad shadowMapFBO effect gScale cameraRef
     idleCallback    $= Just (idleCB gScale cameraRef)
     specialCallback $= Just (specialKeyboardCB cameraRef)
-    keyboardCallback $= Just (keyboardCB dirLight)
+    keyboardCallback $= Just keyboardCB
     passiveMotionCallback $= Just (passiveMotionCB cameraRef)
 
-keyboardCB :: IORef DirectionLight -> KeyboardCallback
-keyboardCB _ 'q' _ = exitSuccess
-keyboardCB dirLight 'a' _ =
-    dirLight $~! changeAmbIntensity (+ 0.05)
-keyboardCB dirLight 's' _ =
-    dirLight $~! changeAmbIntensity (\ x -> x - 0.05)
-keyboardCB dirLight 'z' _ =
-    dirLight $~! changeDiffIntensity (+ 0.05)
-keyboardCB dirLight 'x' _ =
-    dirLight $~! changeDiffIntensity (\ x -> x - 0.05)
-keyboardCB _ _ _ = return ()
+keyboardCB :: KeyboardCallback
+keyboardCB 'q' _ = exitSuccess
+keyboardCB _ _ = return ()
 
 specialKeyboardCB :: IORef Camera -> SpecialCallback
 specialKeyboardCB cameraRef key _ = cameraRef $~! cameraOnKeyboard key
@@ -109,12 +93,13 @@ idleCB gScale cameraRef = do
   postRedisplay Nothing
 
 renderSceneCB :: Mesh
-              -> LightingTechnique
-              -> IORef DirectionLight
+              -> Mesh
+              -> ShadowMapFBO
+              -> ShadowMapTechnique
               -> IORef GLfloat
               -> IORef Camera
               -> DisplayCallback
-renderSceneCB mesh effect dirLight gScale cameraRef = do
+renderSceneCB mesh quad shadowMapFBO effect gScale cameraRef = do
     cameraRef $~! cameraOnRender
     gScaleVal <- readIORef gScale
     camera <- readIORef cameraRef
@@ -131,12 +116,12 @@ renderSceneCB mesh effect dirLight gScale cameraRef = do
                     pipeCamera = camera
                 }
             renderMesh mesh
-            bindFramebuffer defaultFramebufferObject
+            bindFramebuffer Framebuffer $= defaultFramebufferObject
 
         renderPass :: IO ()
         renderPass = do
             clear [ColorBuffer, DepthBuffer]
-            directionLight <- readIORef dirLight
+            setShadowMapTextureUnit effect 0
             bindForReading shadowMapFBO (TextureUnit 0)
             setShadowMapWVP effect $ getTrans
                 WVPPipeline {

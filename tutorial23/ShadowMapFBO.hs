@@ -1,5 +1,6 @@
 module ShadowMapFBO (
-    initializeShadowMapFBO
+    ShadowMapFBO(..)
+  , initializeShadowMapFBO
   , bindForWriting
   , bindForReading
 ) where
@@ -9,16 +10,11 @@ import GHC.Ptr (nullPtr)
 
 import Graphics.Rendering.OpenGL
 
--- I'm too lazy to init Utils.hs.
-windowWidth, windowHeight :: GLsizei
-windowWidth = 1024
-windowHeight = 768
-
 data ShadowMapFBO = ShadowMapFBO FramebufferObject TextureObject
     deriving (Show, Eq)
 
-initializeShadowMapFBO :: IO ShadowMapFBO
-initializeShadowMapFBO = do
+initializeShadowMapFBO :: GLsizei -> GLsizei -> IO ShadowMapFBO
+initializeShadowMapFBO windowWidth windowHeight = do
     -- Create the FBO.
     fbo <- genObjectName
     -- Create the depth buffer.

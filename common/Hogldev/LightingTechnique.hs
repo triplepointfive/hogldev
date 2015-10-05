@@ -16,6 +16,7 @@ module Hogldev.LightingTechnique (
   , setMaterialSpecularIntensity
   , setPointLights
   , setSpotLights
+  , enableLightingTechnique
 ) where
 
 import           Graphics.GLUtil
@@ -273,3 +274,5 @@ setSpotLights LightingTechnique{..} numLights spotLights = do
         uniformScalar dlExpLoc              $= dExp
         uniformScalar dlCutOffLoc           $= cos (toRadian dCutOff)
 
+enableLightingTechnique :: LightingTechnique -> IO ()
+enableLightingTechnique LightingTechnique{..} = enableTechnique lProgram

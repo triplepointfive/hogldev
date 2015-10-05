@@ -46,7 +46,7 @@ main = do
     dirLight <- newIORef directionLight
 
     effect <- initLightingTechnique
-    enableTechnique (lProgram effect)
+    enableLightingTechnique effect
     setLightingTextureUnit effect 0
 
     pointerPosition $= mousePos
