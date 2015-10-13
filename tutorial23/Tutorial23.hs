@@ -11,7 +11,8 @@ import           Hogldev.Pipeline (
                  )
 import           Hogldev.Camera (
                     Camera(..), cameraOnKeyboard,
-                    initCamera, cameraOnMouse, cameraOnRender
+                    initCamera, cameraOnMouse, cameraOnRender,
+                    initWithLocation
                  )
 import           Mesh
 import           ShadowMapTechnique
@@ -113,7 +114,7 @@ renderSceneCB mesh quad shadowMapFBO effect gScale cameraRef = do
                     scaleInfo  = Vector3 0.1 0.1 0.1,
                     rotateInfo = Vector3 0 gScaleVal 0,
                     persProj   = persProjection,
-                    pipeCamera = camera
+                    pipeCamera = initWithLocation (Vector3 (-20) 20 5) (Vector3 1 (-1) 0) (Vector3 0 1 0) 0 0
                 }
             renderMesh mesh
             bindFramebuffer Framebuffer $= defaultFramebufferObject
@@ -125,9 +126,9 @@ renderSceneCB mesh quad shadowMapFBO effect gScale cameraRef = do
             bindForReading shadowMapFBO (TextureUnit 0)
             setShadowMapWVP effect $ getTrans
                 WVPPipeline {
-                    worldInfo  = Vector3 0 0 5,
-                    scaleInfo  = Vector3 0.1 0.1 0.1,
-                    rotateInfo = Vector3 0 gScaleVal 0,
+                    worldInfo  = Vector3 0 0 10,
+                    scaleInfo  = Vector3 2 2 2,
+                    rotateInfo = Vector3 0 0 0,
                     persProj   = persProjection,
                     pipeCamera = camera
                 }

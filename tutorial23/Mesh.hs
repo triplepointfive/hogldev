@@ -27,12 +27,12 @@ data MeshEntry = MeshEntry
   , ib            :: !BufferObject
   , numIndices    :: !GLint
   , materialIndex :: !(Maybe Int)
-  }
+  } deriving Show
 
 data Mesh = Mesh
   { entries  :: ![MeshEntry]
   , textures :: ![Texture]
-  }
+  } deriving Show
 
 vertexSize = sizeOf (TNVertex (Vertex3 0 0 0) (TexCoord2 0 0) (Vertex3 0 0 0))
 
@@ -41,7 +41,7 @@ loadMesh fileName = S.readModelFileWithProcess fileName processes >>= either
     (error . printf "Error parsing '%s': '%s'" fileName)
     (initFromScene fileName)
   where
-    processes = [S.Triangulate, S.GenSmoothNormals, S.FlipUVs]
+    processes = [S.Triangulate, S.GenFaceNormals, S.FlipUVs]
 
 initFromScene :: FilePath -> S.Scene -> IO Mesh
 initFromScene fileName scene = do

@@ -6,6 +6,7 @@ module Hogldev.Camera (
   , cameraOnMouse
   , cameraOnRender
   , initCamera
+  , initWithLocation
 ) where
 
 import           Graphics.Rendering.OpenGL

@@ -27,7 +27,7 @@ data MeshEntry = MeshEntry
   , ib            :: !BufferObject
   , numIndices    :: !GLint
   , materialIndex :: !(Maybe Int)
-  }
+  } deriving Show
 
 data Mesh = Mesh
   { entries  :: ![MeshEntry]
@@ -41,7 +41,7 @@ loadMesh fileName = S.readModelFileWithProcess fileName processes >>= either
     (error . printf "Error parsing '%s': '%s'" fileName)
     (initFromScene fileName)
   where
-    processes = [S.Triangulate, S.GenSmoothNormals, S.FlipUVs]
+    processes = [S.Triangulate, S.GenFaceNormals, S.FlipUVs]
 
 initFromScene :: FilePath -> S.Scene -> IO Mesh
 initFromScene fileName scene = do
@@ -68,24 +68,24 @@ initMaterials S.Scene{..} fileName = map fromJust <$> V.toList <$>
 
 newMeshEntry :: S.Mesh -> IO MeshEntry
 newMeshEntry mesh = initMeshEntry vertices indices
-    where
-      verticesCount = V.length (S._meshVertices mesh)
-      meshTextures = if S.hasTextureCoords mesh 0
-          then S._meshTextureCoords mesh
-          else V.replicate verticesCount (S.V3 0 0 0)
-      vertices = V.toList $ V.zipWith3 toVert
-          (S._meshVertices mesh)
-          (S._meshNormals mesh)
-          meshTextures
-      toVert :: S.V3 Float -> S.V3 Float -> S.V3 Float -> TNVertex
-      toVert (S.V3 px py pz) (S.V3 nx ny nz) (S.V3 tx ty _) =
-          TNVertex pos text norm
-        where
-          pos  = Vertex3 (realToFrac px) (realToFrac py) (realToFrac pz)
-          text = TexCoord2 (realToFrac tx) (realToFrac ty)
-          norm = Vertex3 (realToFrac nx) (realToFrac ny) (realToFrac nz)
-      indices  = map fromIntegral $ V.toList $
-          V.concatMap S._faceIndices (S._meshFaces mesh)
+  where
+    verticesCount = V.length (S._meshVertices mesh)
+    meshTextures = if S.hasTextureCoords mesh 0
+        then S._meshTextureCoords mesh
+        else V.replicate verticesCount (S.V3 0 0 0)
+    vertices = V.toList $ V.zipWith3 toVert
+        (S._meshVertices mesh)
+        (S._meshNormals mesh)
+        meshTextures
+    toVert :: S.V3 Float -> S.V3 Float -> S.V3 Float -> TNVertex
+    toVert (S.V3 px py pz) (S.V3 nx ny nz) (S.V3 tx ty _) =
+        TNVertex pos text norm
+      where
+        pos  = Vertex3 (realToFrac px) (realToFrac py) (realToFrac pz)
+        text = TexCoord2 (realToFrac tx) (realToFrac ty)
+        norm = Vertex3 (realToFrac nx) (realToFrac ny) (realToFrac nz)
+    indices  = map fromIntegral $ V.toList $
+        V.concatMap S._faceIndices (S._meshFaces mesh)
 
 initMeshEntry :: [TNVertex] -> [GLuint] -> IO MeshEntry
 initMeshEntry vertices indices = do

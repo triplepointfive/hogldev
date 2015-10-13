@@ -11,7 +11,7 @@ import           Graphics.GLUtil (readTexture)
 data Texture = Texture
                { textureObject :: !TextureObject
                , textureTarget :: !TextureTarget2D
-               }
+               } deriving Show
 
 textureBind :: Texture -> TextureUnit -> IO ()
 textureBind Texture{..} textureUnit = do

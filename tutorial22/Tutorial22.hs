@@ -13,7 +13,6 @@ import           Hogldev.Camera (
                     Camera(..), cameraOnKeyboard,
                     initCamera, cameraOnMouse, cameraOnRender
                  )
-import           Hogldev.Technique
 
 import           Hogldev.LightingTechnique
 import           Mesh

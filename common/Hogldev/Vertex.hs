@@ -9,6 +9,7 @@ import           Foreign.Ptr
 import           Graphics.Rendering.OpenGL
 
 data TexturedVertex = TexturedVertex (Vertex3 GLfloat) (TexCoord2 GLfloat)
+    deriving Show
 
 instance Storable TexturedVertex where
     sizeOf ~(TexturedVertex v t) = sizeOf v + sizeOf t
@@ -23,6 +24,7 @@ instance Storable TexturedVertex where
 
 
 data TNVertex = TNVertex (Vertex3 GLfloat) (TexCoord2 GLfloat) (Vertex3 GLfloat)
+    deriving Show
 
 instance Storable TNVertex where
     sizeOf ~(TNVertex v t n) = sizeOf v + sizeOf t + sizeOf n
