@@ -36,8 +36,8 @@ main = do
     initialWindowPosition $= Position 100 100
     createWindow "Tutorial 22"
 
-    -- frontFace $= CW
-    -- cullFace $= Just Back
+    frontFace $= CCW
+    cullFace $= Just Back
     depthFunc $= Just Lequal
 
     gScale <- newIORef 0.0
@@ -57,13 +57,14 @@ main = do
 
     mainLoop
   where
-    newCamera = initCamera Nothing windowWidth windowHeight
+    newCamera = initCamera (Just (Vector3 3 7 (-15), Vector3 0 (-0.2) 1, Vector3 0 1 0))
+        windowWidth windowHeight
     mousePos = Position (windowWidth `div` 2) (windowHeight `div` 2)
     directionLight =
         DirectionLight
         { ambientColor     = Vertex3 1.0 1.0 1.0
         , ambientIntensity = 1.0
-        , diffuseDirection = Vertex3 1.0 0 1.0
+        , diffuseDirection = Vertex3 1.0 (-1) 0
         , diffuseIntensity = 0.01
         }
 
@@ -120,17 +121,17 @@ renderSceneCB mesh effect dirLight gScale cameraRef = do
 
     setLightingWVP effect $ getTrans
         WVPPipeline {
-            worldInfo  = Vector3 0 0 5,
+            worldInfo  = Vector3 0 0 10,
             scaleInfo  = Vector3 0.1 0.1 0.1,
-            rotateInfo = Vector3 0 gScaleVal 0,
+            rotateInfo = Vector3 (-90) gScaleVal 0,
             persProj   = persProjection,
             pipeCamera = camera
         }
     setLightingWorldMatrix effect $ getTrans
         WPipeline {
-            worldInfo  = Vector3 0 0 5,
+            worldInfo  = Vector3 0 0 10,
             scaleInfo  = Vector3 0.1 0.1 0.1,
-            rotateInfo = Vector3 0 gScaleVal 0
+            rotateInfo = Vector3 (-90) gScaleVal 0
         }
     setDirectionalLight effect directionLight
 
