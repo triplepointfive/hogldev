@@ -109,11 +109,11 @@ renderSceneCB mesh quad shadowMapFBO effect gScale cameraRef = do
             clear [DepthBuffer]
             setShadowMapWVP effect $ getTrans
                 WVPPipeline {
-                    worldInfo  = Vector3 0 0 10,
+                    worldInfo  = Vector3 0 0 5,
                     scaleInfo  = Vector3 0.1 0.1 0.1,
-                    rotateInfo = Vector3 0 gScaleVal 0,
+                    rotateInfo = Vector3 (-90) gScaleVal 0,
                     persProj   = persProjection,
-                    pipeCamera = initCamera (Just (Vector3 3 3 (-15), Vector3 0 0 1, Vector3 0 1 0)) 0 0
+                    pipeCamera = initCamera (Just (Vector3 (-20) 20 5, Vector3 1 (-1) 0, Vector3 0 1 0)) 0 0
                 }
             renderMesh mesh
             bindFramebuffer Framebuffer $= defaultFramebufferObject
