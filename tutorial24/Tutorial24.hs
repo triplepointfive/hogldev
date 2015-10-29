@@ -16,6 +16,7 @@ import           Hogldev.Camera (
 import           Mesh
 import           ShadowMapTechnique
 import           ShadowMapFBO
+import           LightingTechnique
 
 windowWidth = 1024
 windowHeight = 768
@@ -45,15 +46,15 @@ main = do
 
     shadowMapFBO <- initializeShadowMapFBO windowWidth windowHeight
 
-    effect <- initShadowMapTechnique
-    enableShadowMapTechnique effect
+    shadowMapEffect <- initShadowMapTechnique
+    lightingEffect <- initLightingTechnique
 
     pointerPosition $= mousePos
 
     mesh <- loadMesh "assets/phoenix_ugv.md2"
     quad <- loadMesh "assets/quad.obj"
 
-    initializeGlutCallbacks mesh quad shadowMapFBO effect  gScale cameraRef
+    initializeGlutCallbacks mesh quad shadowMapFBO lightingEffect shadowMapEffect  gScale cameraRef
     clearColor $= Color4 0 0 0 0
 
     mainLoop
@@ -64,13 +65,14 @@ main = do
 initializeGlutCallbacks :: Mesh
                         -> Mesh
                         -> ShadowMapFBO
+                        -> LightingTechnique
                         -> ShadowMapTechnique
                         -> IORef GLfloat
                         -> IORef Camera
                         -> IO ()
-initializeGlutCallbacks mesh quad shadowMapFBO effect gScale cameraRef = do
+initializeGlutCallbacks mesh quad shadowMapFBO lightingEffect shadowMapEffect gScale cameraRef = do
     displayCallback $=
-        renderSceneCB mesh quad shadowMapFBO effect gScale cameraRef
+        renderSceneCB mesh quad shadowMapFBO lightingEffect shadowMapEffect gScale cameraRef
     idleCallback    $= Just (idleCB gScale cameraRef)
     specialCallback $= Just (specialKeyboardCB cameraRef)
     keyboardCallback $= Just keyboardCB
@@ -95,11 +97,12 @@ idleCB gScale cameraRef = do
 renderSceneCB :: Mesh
               -> Mesh
               -> ShadowMapFBO
+              -> LightingTechnique
               -> ShadowMapTechnique
               -> IORef GLfloat
               -> IORef Camera
               -> DisplayCallback
-renderSceneCB mesh quad shadowMapFBO effect gScale cameraRef = do
+renderSceneCB mesh quad shadowMapFBO lightingEffect shadowMapEffect gScale cameraRef = do
     cameraRef $~! cameraOnRender
     gScaleVal <- readIORef gScale
     camera <- readIORef cameraRef
@@ -107,13 +110,14 @@ renderSceneCB mesh quad shadowMapFBO effect gScale cameraRef = do
         shadowMapPass = do
             bindForWriting shadowMapFBO
             clear [DepthBuffer]
-            setShadowMapWVP effect $ getTrans
+            enableShadowMapTechnique shadowMapEffect
+            setShadowMapWVP shadowMapEffect $ getTrans
                 WVPPipeline {
-                    worldInfo  = Vector3 0 0 5,
+                    worldInfo  = Vector3 0 0 3,
                     scaleInfo  = Vector3 0.1 0.1 0.1,
                     rotateInfo = Vector3 (-90) gScaleVal 0,
                     persProj   = persProjection,
-                    pipeCamera = initCamera (Just (Vector3 (-20) 20 5, Vector3 1 (-1) 0, Vector3 0 1 0)) 0 0
+                    pipeCamera = initCamera (Just (Vector3 (-20) 20 1, Vector3 1 (-1) 0, Vector3 0 1 0)) 0 0
                 }
             renderMesh mesh
             bindFramebuffer Framebuffer $= defaultFramebufferObject
@@ -121,9 +125,13 @@ renderSceneCB mesh quad shadowMapFBO effect gScale cameraRef = do
         renderPass :: IO ()
         renderPass = do
             clear [ColorBuffer, DepthBuffer]
-            setShadowMapTextureUnit effect 0
+            enableLightingTechnique lightingEffect
+
+            setEyeWorldPos lightingEffect (cameraPos camera)
+
             bindForReading shadowMapFBO (TextureUnit 0)
-            setShadowMapWVP effect $ getTrans
+
+            setShadowMapWVP shadowMapEffect $ getTrans
                 WVPPipeline {
                     worldInfo  = Vector3 0 0 10,
                     scaleInfo  = Vector3 2 2 2,
@@ -131,6 +139,7 @@ renderSceneCB mesh quad shadowMapFBO effect gScale cameraRef = do
                     persProj   = persProjection,
                     pipeCamera = camera
                 }
+            renderMesh mesh
             renderMesh quad
 
     shadowMapPass
