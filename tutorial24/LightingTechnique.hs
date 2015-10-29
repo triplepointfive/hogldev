@@ -7,16 +7,18 @@ module LightingTechnique (
   , changeAmbIntensity
   , changeDiffIntensity
   , initLightingTechnique
-  , enableLightingTechnique
   , setLightingWVP
   , setLightingWorldMatrix
+  , setLightingLightWVPMatrix
   , setLightingTextureUnit
+  , setLightingShadowMapTextureUnit
   , setDirectionalLight
   , setEyeWorldPos
   , setMatSpecularPower
   , setMaterialSpecularIntensity
   , setPointLights
   , setSpotLights
+  , enableLightingTechnique
 ) where
 
 import           Graphics.GLUtil
@@ -25,8 +27,8 @@ import           Graphics.Rendering.OpenGL
 import           Hogldev.Technique
 import           Hogldev.Utils (normalizeVertex, toRadian)
 
-maxPointLights = 2
-maxSpotLights  = 2
+maxPointLights = 0
+maxSpotLights  = 0
 
 data DirectionLight =
     DirectionLight
@@ -73,7 +75,9 @@ data LightingTechnique =
     { lProgram                          :: !Program
     , lWVPLoc                           :: !UniformLocation
     , lWorldMatrixLoc                   :: !UniformLocation
+    , lLightWVPLoc                      :: !UniformLocation
     , lSamplerLoc                       :: !UniformLocation
+    , lShadowMapLoc                     :: !UniformLocation
     , lDirLightColorLoc                 :: !UniformLocation
     , lDirLightAmbientIntensityColorLoc :: !UniformLocation
     , lDirLightDirectionLoc             :: !UniformLocation
@@ -120,7 +124,9 @@ initLightingTechnique = do
 
     wvpLoc <- getUniformLocation program "gWVP"
     worldMatrixLoc <- getUniformLocation program "gWorld"
+    lightWVPLoc <- getUniformLocation program "gLightWVP"
     samplerLoc <- getUniformLocation program "gSampler"
+    shadowMapLoc <- getUniformLocation program "gShadowMap"
     eyeWorldPosition <- getUniformLocation program "gEyeWorldPos"
 
     dirLightColorLoc <- getUniformLocation program "gDirectionalLight.Base.Color"
@@ -144,7 +150,9 @@ initLightingTechnique = do
         { lProgram                          = program
         , lWVPLoc                           = wvpLoc
         , lWorldMatrixLoc                   = worldMatrixLoc
+        , lLightWVPLoc                      = lightWVPLoc
         , lSamplerLoc                       = samplerLoc
+        , lShadowMapLoc                     = shadowMapLoc
         , lDirLightColorLoc                 = dirLightColorLoc
         , lDirLightAmbientIntensityColorLoc = dirLightAmbientIntensityLoc
         , lDirLightDirectionLoc             = dirLightDirectionLoc
@@ -213,9 +221,17 @@ setLightingWorldMatrix :: LightingTechnique -> [[GLfloat]] -> IO ()
 setLightingWorldMatrix LightingTechnique{..} mat =
     uniformMat lWorldMatrixLoc $= mat
 
+setLightingLightWVPMatrix :: LightingTechnique -> [[GLfloat]] -> IO ()
+setLightingLightWVPMatrix LightingTechnique{..} mat =
+    uniformMat lLightWVPLoc $= mat
+
 setLightingTextureUnit :: LightingTechnique -> GLuint -> IO ()
 setLightingTextureUnit LightingTechnique{..} textureUnit =
     uniformScalar lSamplerLoc $= textureUnit
+
+setLightingShadowMapTextureUnit :: LightingTechnique -> GLuint -> IO ()
+setLightingShadowMapTextureUnit LightingTechnique{..} textureUnit =
+    uniformScalar lShadowMapLoc $= textureUnit
 
 setDirectionalLight :: LightingTechnique -> DirectionLight -> IO ()
 setDirectionalLight LightingTechnique{..} DirectionLight{..} = do

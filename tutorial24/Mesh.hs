@@ -67,7 +67,7 @@ initMaterials S.Scene{..} fileName = map fromJust <$> V.toList <$>
     (dir, _) = splitFileName fileName
 
 newMeshEntry :: S.Mesh -> IO MeshEntry
-newMeshEntry mesh = initMeshEntry vertices indices
+newMeshEntry mesh = initMeshEntry vertices indices (S._meshMaterialIndex mesh)
     where
       verticesCount = V.length (S._meshVertices mesh)
       meshTextures = if S.hasTextureCoords mesh 0
@@ -87,15 +87,15 @@ newMeshEntry mesh = initMeshEntry vertices indices
       indices  = map fromIntegral $ V.toList $
           V.concatMap S._faceIndices (S._meshFaces mesh)
 
-initMeshEntry :: [TNVertex] -> [GLuint] -> IO MeshEntry
-initMeshEntry vertices indices = do
+initMeshEntry :: [TNVertex] -> [GLuint] -> Maybe Int -> IO MeshEntry
+initMeshEntry vertices indices matIndex = do
     vbo <- createVertexBuffer vertices
     ibo <- createIndexBuffer indices
     return MeshEntry
         { vb            = vbo
         , ib            = ibo
         , numIndices    = fromIntegral (length indices)
-        , materialIndex = Nothing
+        , materialIndex = matIndex
         }
 
 createVertexBuffer :: [TNVertex] -> IO BufferObject

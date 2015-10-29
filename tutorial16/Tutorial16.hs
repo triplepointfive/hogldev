@@ -2,6 +2,7 @@ module Main where
 
 import           Control.Monad (when, unless)
 import           Data.IORef
+import           Data.Maybe (isNothing, fromJust)
 import           Graphics.Rendering.OpenGL
 import           Graphics.GLUtil
 import           Graphics.UI.GLUT hiding (exit)
@@ -20,8 +21,6 @@ import           Hogldev.Camera (
                  )
 import           Hogldev.Texture
 import           Hogldev.Vertex (TexturedVertex(..))
-
-import           Data.Maybe (isNothing, fromJust)
 
 windowWidth = 1024
 windowHeight = 768
