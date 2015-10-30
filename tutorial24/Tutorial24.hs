@@ -7,42 +7,46 @@ import           Graphics.Rendering.OpenGL
 import           Graphics.UI.GLUT hiding (exit)
 import           System.Exit (exitFailure, exitSuccess)
 
+import           Hogldev.ShadowMapFBO
 import           Hogldev.Texture
 import           Hogldev.Pipeline (
                     Pipeline(..), getTrans,
                     PersProj(..)
                  )
-import           Hogldev.Camera (
-                    Camera(..), cameraOnKeyboard,
+import           Hogldev.Camera ( Camera(..), cameraOnKeyboard,
                     initCamera, cameraOnMouse, cameraOnRender
                  )
 
 import           LightingTechnique
 import           Mesh
 import           ShadowMapTechnique
-import           ShadowMapFBO
 
-windowWidth = 1024
-windowHeight = 768
+windowWidth = 1920
+windowHeight = 1080
 
 persProjection = PersProj
-                 { persFOV   = 30
+                 { persFOV   = 60
                  , persWidth = fromIntegral windowWidth
                  , persHeigh = fromIntegral windowHeight
                  , persZNear = 1
-                 , persZFar  = 1000
+                 , persZFar  = 50
                  }
 
 spotlightPos = Vector3 (-20.0) 20.0 1.0
 spotlightDir = Vector3 1.0 (-1.0) 0.0
-
-directionLight =
-    DirectionLight
-    { ambientColor     = Vertex3 1.0 1.0 1.0
-    , ambientIntensity = 1.0
-    , diffuseDirection = Vertex3 1.0 (-1) 0
-    , diffuseIntensity = 0.01
+spotLights =
+  [ DirectionalLight
+    { dAmbientColor     = Vertex3 1 1 1
+    , dAmbientIntensity = 0.1
+    , dDiffuseIntensity = 0.9
+    , dPosition         = Vertex3 (-20.0) 20.0 1.0
+    , dConstant         = 1
+    , dLinear           = 0.01
+    , dExp              = 0
+    , dDirection        = Vertex3 1.0 (-1.0) 0.0
+    , dCutOff           = 20
     }
+  ]
 
 main :: IO ()
 main = do
@@ -60,20 +64,21 @@ main = do
     cameraRef <- newIORef newCamera
 
     shadowMapFBO <- initializeShadowMapFBO windowWidth windowHeight
-    groundTex <- textureLoad "assets/test.png" Texture2D
-    when (isNothing groundTex) exitFailure
-
-    shadowMapEffect <- initShadowMapTechnique
     lightingEffect <- initLightingTechnique
 
     enableLightingTechnique lightingEffect
+    setSpotLights lightingEffect 1 spotLights
     setLightingTextureUnit lightingEffect 0
     setLightingShadowMapTextureUnit lightingEffect 1
 
+    shadowMapEffect <- initShadowMapTechnique
+
     pointerPosition $= mousePos
 
-    mesh <- loadMesh "assets/phoenix_ugv.md2"
     quad <- loadMesh "assets/quad.obj"
+    groundTex <- textureLoad "assets/test.png" Texture2D
+    when (isNothing groundTex) exitFailure
+    mesh <- loadMesh "assets/phoenix_ugv.md2"
 
     initializeGlutCallbacks mesh quad shadowMapFBO lightingEffect shadowMapEffect  gScale cameraRef (fromJust groundTex)
     clearColor $= Color4 0 0 0 0
@@ -158,7 +163,7 @@ renderSceneCB mesh quad shadowMapFBO lightingEffect shadowMapEffect gScale camer
 
             setLightingWVP lightingEffect $ getTrans
                 WVPPipeline {
-                    worldInfo  = Vector3 0 0 10,
+                    worldInfo  = Vector3 0 0 1,
                     scaleInfo  = Vector3 10 10 10,
                     rotateInfo = Vector3 90 0 0,
                     persProj   = persProjection,
@@ -166,13 +171,13 @@ renderSceneCB mesh quad shadowMapFBO lightingEffect shadowMapEffect gScale camer
                 }
             setLightingWorldMatrix lightingEffect $ getTrans
                 WPipeline {
-                    worldInfo  = Vector3 0 0 10,
+                    worldInfo  = Vector3 0 0 1,
                     scaleInfo  = Vector3 10 10 10,
                     rotateInfo = Vector3 90 0 0
                 }
             setLightingLightWVPMatrix lightingEffect $ getTrans
                 WVPPipeline {
-                    worldInfo  = Vector3 0 0 10,
+                    worldInfo  = Vector3 0 0 1,
                     scaleInfo  = Vector3 10 10 10,
                     rotateInfo = Vector3 90 0 0,
                     persProj   = persProjection,
@@ -204,7 +209,6 @@ renderSceneCB mesh quad shadowMapFBO lightingEffect shadowMapEffect gScale camer
                     pipeCamera = initCamera (Just (spotlightPos, spotlightDir, Vector3 0 1 0)) windowWidth windowHeight
                 }
 
-            setDirectionalLight lightingEffect directionLight
             renderMesh mesh
 
     shadowMapPass

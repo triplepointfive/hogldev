@@ -27,8 +27,8 @@ import           Graphics.Rendering.OpenGL
 import           Hogldev.Technique
 import           Hogldev.Utils (normalizeVertex, toRadian)
 
-maxPointLights = 0
-maxSpotLights  = 0
+maxPointLights = 2
+maxSpotLights  = 2
 
 data DirectionLight =
     DirectionLight
@@ -118,8 +118,8 @@ data DirectionalLightLoc =
 initLightingTechnique :: IO LightingTechnique
 initLightingTechnique = do
     program <- createProgram
-    addShader program "tutorial21/lighting.vs" VertexShader
-    addShader program "tutorial21/lighting.fs" FragmentShader
+    addShader program "tutorial24/lighting.vs" VertexShader
+    addShader program "tutorial24/lighting.fs" FragmentShader
     finalize program
 
     wvpLoc <- getUniformLocation program "gWVP"
@@ -225,11 +225,11 @@ setLightingLightWVPMatrix :: LightingTechnique -> [[GLfloat]] -> IO ()
 setLightingLightWVPMatrix LightingTechnique{..} mat =
     uniformMat lLightWVPLoc $= mat
 
-setLightingTextureUnit :: LightingTechnique -> GLuint -> IO ()
+setLightingTextureUnit :: LightingTechnique -> GLint -> IO ()
 setLightingTextureUnit LightingTechnique{..} textureUnit =
     uniformScalar lSamplerLoc $= textureUnit
 
-setLightingShadowMapTextureUnit :: LightingTechnique -> GLuint -> IO ()
+setLightingShadowMapTextureUnit :: LightingTechnique -> GLint -> IO ()
 setLightingShadowMapTextureUnit LightingTechnique{..} textureUnit =
     uniformScalar lShadowMapLoc $= textureUnit
 

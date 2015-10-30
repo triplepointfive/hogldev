@@ -1,4 +1,4 @@
-module ShadowMapFBO (
+module Hogldev.ShadowMapFBO (
     ShadowMapFBO(..)
   , initializeShadowMapFBO
   , bindForWriting
@@ -19,9 +19,10 @@ initializeShadowMapFBO windowWidth windowHeight = do
     fbo <- genObjectName
     -- Create the depth buffer.
     shadowMap <- genObjectName
-    textureBinding  Texture2D $= Just shadowMap
+    textureBinding Texture2D $= Just shadowMap
     texImage2D Texture2D NoProxy 0 DepthComponent' screenSize 0 pixelData
-    textureFilter   Texture2D $= ((Linear', Nothing), Linear')
+    textureFilter Texture2D $= ((Linear', Nothing), Linear')
+    textureCompareMode Texture2D $= Nothing
     textureWrapMode Texture2D S $= (Repeated, ClampToEdge)
     textureWrapMode Texture2D T $= (Repeated, ClampToEdge)
 

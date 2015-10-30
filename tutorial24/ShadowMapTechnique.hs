@@ -22,17 +22,17 @@ data ShadowMapTechnique =
 initShadowMapTechnique :: IO ShadowMapTechnique
 initShadowMapTechnique = do
     program <- createProgram
-    addShader program "tutorial23/shadow_map.vs" VertexShader
-    addShader program "tutorial23/shadow_map.fs" FragmentShader
+    addShader program "tutorial24/shadow_map.vs" VertexShader
+    addShader program "tutorial24/shadow_map.fs" FragmentShader
     finalize program
 
     wvpLoc <- getUniformLocation program "gWVP"
     samplerLoc <- getUniformLocation program "gShadowMap"
 
     return ShadowMapTechnique
-        { lProgram                          = program
-        , lWVPLoc                           = wvpLoc
-        , lSamplerLoc                       = samplerLoc
+        { lProgram     = program
+        , lWVPLoc      = wvpLoc
+        , lSamplerLoc  = samplerLoc
         }
 
 setShadowMapWVP :: ShadowMapTechnique -> [[GLfloat]] -> IO ()

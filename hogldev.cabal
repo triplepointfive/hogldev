@@ -14,6 +14,7 @@ library
   hs-source-dirs:      common/Hogldev
                      , common
   exposed-modules:     Hogldev.Math3D
+                     , Hogldev.ShadowMapFBO
                      , Hogldev.Pipeline
                      , Hogldev.LightingTechnique
                      , Hogldev.Utils
