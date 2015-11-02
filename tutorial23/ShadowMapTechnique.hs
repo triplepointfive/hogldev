@@ -38,7 +38,7 @@ initShadowMapTechnique = do
 setShadowMapWVP :: ShadowMapTechnique -> [[GLfloat]] -> IO ()
 setShadowMapWVP ShadowMapTechnique{..} mat = uniformMat lWVPLoc $= mat
 
-setShadowMapTextureUnit :: ShadowMapTechnique -> GLuint -> IO ()
+setShadowMapTextureUnit :: ShadowMapTechnique -> GLint -> IO ()
 setShadowMapTextureUnit ShadowMapTechnique{..} textureUnit =
     uniformScalar lSamplerLoc $= textureUnit
 
