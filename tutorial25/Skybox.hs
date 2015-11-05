@@ -45,11 +45,11 @@ skyboxRender :: Skybox -> Camera -> IO ()
 skyboxRender Skybox{..} camera = do
     enableSkyboxTechnique technique
 
-    oldCullFaceMode <- get cullFace
-    oldDepthMode <- get depthFunc
+    -- oldCullFaceMode <- get cullFace
+    -- oldDepthMode <- get depthFunc
 
-    cullFace $= Just Front
-    depthFunc $= Just Lequal
+    -- cullFace $= Just Front
+    -- depthFunc $= Just Lequal
 
     setSkyboxTechniqueWVP technique $ getTrans
         WVPPipeline {
@@ -62,5 +62,5 @@ skyboxRender Skybox{..} camera = do
     cubeMapTexBind cubeMapTex (TextureUnit 0)
     renderMesh mesh
 
-    cullFace $= oldCullFaceMode
-    depthFunc $= oldDepthMode
+    -- cullFace $= oldCullFaceMode
+    -- depthFunc $= oldDepthMode

@@ -1,11 +1,9 @@
 module Main where
 
-import           Control.Monad (when)
 import           Data.IORef
-import           Data.Maybe (isNothing, fromJust)
 import           Graphics.Rendering.OpenGL
 import           Graphics.UI.GLUT hiding (exit)
-import           System.Exit (exitFailure, exitSuccess)
+import           System.Exit (exitSuccess)
 
 import           Hogldev.Pipeline (
                     Pipeline(..), getTrans,
@@ -62,11 +60,10 @@ main = do
 
     pointerPosition $= mousePos
 
-    quad <- loadMesh "assets/quad.obj"
     tankMesh <- loadMesh "assets/phoenix_ugv.md2"
     skyBox <- initSkybox persProjection cubeMapFilenames
 
-    initializeGlutCallbacks tankMesh quad lightingEffect gScale cameraRef skyBox
+    initializeGlutCallbacks tankMesh lightingEffect gScale cameraRef skyBox
     clearColor $= Color4 0 0 0 0
 
     mainLoop
@@ -77,25 +74,24 @@ main = do
     mousePos = Position (windowWidth `div` 2) (windowHeight `div` 2)
 
     cubeMapFilenames = CubeMapFilenames
-        { directory    = "."
-        , posXFilename = "../Content/sp3right.jpg"
-        , negXFilename = "../Content/sp3left.jpg"
-        , posYFilename = "../Content/sp3top.jpg"
-        , negYFilename = "../Content/sp3bot.jpg"
-        , posZFilename = "../Content/sp3front.jpg"
-        , negZFilename = "../Content/sp3back.jpg"
+        { directory    = "assets"
+        , posXFilename = "sp3right.jpg"
+        , negXFilename = "sp3left.jpg"
+        , posYFilename = "sp3top.jpg"
+        , negYFilename = "sp3bot.jpg"
+        , posZFilename = "sp3front.jpg"
+        , negZFilename = "sp3back.jpg"
         }
 
 initializeGlutCallbacks :: Mesh
-                        -> Mesh
                         -> LightingTechnique
                         -> IORef GLfloat
                         -> IORef Camera
                         -> Skybox
                         -> IO ()
-initializeGlutCallbacks tankMesh quad lightingEffect gScale cameraRef texture = do
+initializeGlutCallbacks tankMesh lightingEffect gScale cameraRef texture = do
     displayCallback $=
-        renderSceneCB tankMesh quad lightingEffect gScale cameraRef texture
+        renderSceneCB tankMesh lightingEffect gScale cameraRef texture
     idleCallback    $= Just (idleCB gScale cameraRef)
     specialCallback $= Just (specialKeyboardCB cameraRef)
     keyboardCallback $= Just keyboardCB
@@ -118,13 +114,12 @@ idleCB gScale cameraRef = do
     postRedisplay Nothing
 
 renderSceneCB :: Mesh
-              -> Mesh
               -> LightingTechnique
               -> IORef GLfloat
               -> IORef Camera
               -> Skybox
               -> DisplayCallback
-renderSceneCB tankMesh quad lightingEffect gScale cameraRef skyBox = do
+renderSceneCB tankMesh lightingEffect gScale cameraRef skyBox = do
     cameraRef $~! cameraOnRender
     gScaleVal <- readIORef gScale
     camera <- readIORef cameraRef
@@ -137,7 +132,7 @@ renderSceneCB tankMesh quad lightingEffect gScale cameraRef skyBox = do
         WVPPipeline {
             worldInfo  = Vector3 0 (-5) 3,
             scaleInfo  = Vector3 0.1 0.1 0.1,
-            rotateInfo = Vector3 90 0 0,
+            rotateInfo = Vector3 (-90) gScaleVal 0,
             persProj   = persProjection,
             pipeCamera = camera
         }
@@ -145,10 +140,10 @@ renderSceneCB tankMesh quad lightingEffect gScale cameraRef skyBox = do
         WPipeline {
             worldInfo  = Vector3 0 (-5) 3,
             scaleInfo  = Vector3 0.1 0.1 0.1,
-            rotateInfo = Vector3 90 0 0
+            rotateInfo = Vector3 (-90) gScaleVal 0
         }
 
-    skyboxRender skyBox camera
     renderMesh tankMesh
+    skyboxRender skyBox camera
 
     swapBuffers
