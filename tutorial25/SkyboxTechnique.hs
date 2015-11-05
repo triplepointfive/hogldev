@@ -17,7 +17,7 @@ data SkyboxTechnique =
     { lProgram    :: !Program
     , lWVPLoc     :: !UniformLocation
     , lTextureLoc :: !UniformLocation
-    }
+    } deriving Show
 
 initSkyboxTechnique :: IO SkyboxTechnique
 initSkyboxTechnique = do

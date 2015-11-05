@@ -75,12 +75,12 @@ rotateVector angle (Vector3 originX originY originZ) (Vector3 axeX axeY axeZ) =
     V3 x y z = rotate rotationQ (V3 originX originY originZ)
 
 data PersProj = PersProj
-                { persFOV   :: !GLfloat
-                , persWidth :: !GLfloat
-                , persHeigh :: !GLfloat
-                , persZNear :: !GLfloat
-                , persZFar  :: !GLfloat
-                }
+    { persFOV   :: !GLfloat
+    , persWidth :: !GLfloat
+    , persHeigh :: !GLfloat
+    , persZNear :: !GLfloat
+    , persZFar  :: !GLfloat
+    } deriving Show
 
 toRadian :: (Floating a, Num a) => a -> a
 toRadian x = x * pi / 180

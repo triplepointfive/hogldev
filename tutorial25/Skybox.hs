@@ -2,9 +2,8 @@
 module Skybox (
     Skybox (..)
   , initSkybox
+  , skyboxRender
 ) where
-
-import           Data.IORef
 
 import           Graphics.Rendering.OpenGL
 
@@ -13,39 +12,51 @@ import           Hogldev.Pipeline (
                     PersProj(..)
                  )
 import           Hogldev.Camera (Camera(..))
+import           Hogldev.CubemapTexture
 
+import           Mesh
 import           SkyboxTechnique
 
 data Skybox =
     Skybox
-    { technique  :: !SkyboxTechnique
-    , cameraRef  :: !(IORef Camera)
-    , cubeMapTex :: !TextureCubeMap
-    , mesh       :: !Mesh
-    , persProj   :: !PersProj
+    { technique   :: !SkyboxTechnique
+    , cubeMapTex  :: !CubemapTexture
+    , mesh        :: !Mesh
+    , skyPersProj :: !PersProj
     } deriving (Show)
 
-initSkybox :: IORef Camera -> PersProj -> IO Skybox
-initSkybox = undefined
+initSkybox :: PersProj -> CubeMapFilenames -> IO Skybox
+initSkybox perspective cubeMapFiles = do
+    tech <- initSkyboxTechnique
+    enableSkyboxTechnique tech
+    setSkyboxTechniqueUnit tech 0
 
-skyboxRender :: Skybox -> IO ()
-skyboxRender Skybox{..} = do
-    camera <- readIORef cameraRef
+    cubeMapTexture <- loadCubemapTexture cubeMapFiles
 
+    sphereMesh <- loadMesh "assets/sphere.obj"
+    return Skybox
+        { technique   = tech
+        , cubeMapTex  = cubeMapTexture
+        , mesh        = sphereMesh
+        , skyPersProj = perspective
+        }
+
+skyboxRender :: Skybox -> Camera -> IO ()
+skyboxRender Skybox{..} camera = do
     enableSkyboxTechnique technique
 
     oldCullFaceMode <- get cullFace
     oldDepthMode <- get depthFunc
 
-    cullFace $= Front
-    depthFunc $= Lequal
+    cullFace $= Just Front
+    depthFunc $= Just Lequal
 
     setSkyboxTechniqueWVP technique $ getTrans
         WVPPipeline {
             worldInfo  = cameraPos camera,
             scaleInfo  = Vector3 20.0 20.0 20.0,
             rotateInfo = Vector3 0 0 0,
-            persProj   = persProj,
+            persProj   = skyPersProj,
             pipeCamera = camera
         }
     cubeMapTexBind cubeMapTex (TextureUnit 0)

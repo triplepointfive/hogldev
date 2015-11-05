@@ -31,6 +31,7 @@ data Pipeline =
         , persProj   :: PersProj
         , pipeCamera :: Camera
         }
+    deriving Show
 
 getTrans :: Pipeline -> Matrix4
 getTrans WPipeline{..}   = worldTrans scaleInfo worldInfo rotateInfo
