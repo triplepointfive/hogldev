@@ -34,6 +34,8 @@ data Mesh = Mesh
   , textures :: ![Texture]
   } deriving Show
 
+type VertexData = TNVertex
+
 vertexSize = sizeOf (TNVertex (Vertex3 0 0 0) (TexCoord2 0 0) (Vertex3 0 0 0))
 
 loadMesh :: FilePath -> IO Mesh
@@ -77,7 +79,7 @@ newMeshEntry mesh = initMeshEntry vertices indices (S._meshMaterialIndex mesh)
           (S._meshVertices mesh)
           (S._meshNormals mesh)
           meshTextures
-      toVert :: S.V3 Float -> S.V3 Float -> S.V3 Float -> TNVertex
+      toVert :: S.V3 Float -> S.V3 Float -> S.V3 Float -> VertexData
       toVert (S.V3 px py pz) (S.V3 nx ny nz) (S.V3 tx ty _) =
           TNVertex pos text norm
         where
@@ -87,7 +89,7 @@ newMeshEntry mesh = initMeshEntry vertices indices (S._meshMaterialIndex mesh)
       indices  = map fromIntegral $ V.toList $
           V.concatMap S._faceIndices (S._meshFaces mesh)
 
-initMeshEntry :: [TNVertex] -> [GLuint] -> Maybe Int -> IO MeshEntry
+initMeshEntry :: [VertexData] -> [GLuint] -> Maybe Int -> IO MeshEntry
 initMeshEntry vertices indices matIndex = do
     vbo <- createVertexBuffer vertices
     ibo <- createIndexBuffer indices
@@ -98,7 +100,7 @@ initMeshEntry vertices indices matIndex = do
         , materialIndex = matIndex
         }
 
-createVertexBuffer :: [TNVertex] -> IO BufferObject
+createVertexBuffer :: [VertexData] -> IO BufferObject
 createVertexBuffer vertices = do
     vbo <- genObjectName
     bindBuffer ArrayBuffer $= Just vbo
@@ -127,17 +129,19 @@ renderMesh Mesh{..} = do
     vertexAttribArray vPosition $= Enabled
     vertexAttribArray vTextCoord $= Enabled
     vertexAttribArray vNormals $= Enabled
+    vertexAttribArray vTangent $= Enabled
 
     forM_ entries renderEntry
 
     vertexAttribArray vPosition $= Disabled
     vertexAttribArray vTextCoord $= Disabled
     vertexAttribArray vNormals $= Disabled
-
+    vertexAttribArray vTangent $= Disabled
   where
     vPosition = AttribLocation 0
     vTextCoord = AttribLocation 1
     vNormals = AttribLocation 2
+    vTangent = AttribLocation 3
 
     renderEntry :: MeshEntry -> IO ()
     renderEntry MeshEntry{..} = do

@@ -22,7 +22,6 @@ instance Storable TexturedVertex where
         poke (castPtr ptr) v
         pokeByteOff (castPtr ptr) (sizeOf v) t
 
-
 data TNVertex = TNVertex (Vertex3 GLfloat) (TexCoord2 GLfloat) (Vertex3 GLfloat)
     deriving Show
 
@@ -39,3 +38,17 @@ instance Storable TNVertex where
         pokeByteOff (castPtr ptr) (sizeOf v) t
         pokeByteOff (castPtr ptr) (sizeOf v + sizeOf t) n
 
+-- | Vertex with tangent.
+data TNTVertex = TNTVertex (Vertex3 GLfloat) (TexCoord2 GLfloat) (Vertex3 GLfloat) (Vertex3 GLfloat)
+    deriving Show
+
+instance Storable TNTVertex where
+    sizeOf ~(TNTVertex v t n tangent) = sizeOf (TNVertex v t n) + sizeOf tangent
+    alignment ~(TNTVertex v _ _ _) = alignment v
+    peek ptr = do
+        (TNVertex v t n) <- peek (castPtr ptr)
+        tangent <- peekByteOff (castPtr ptr) (sizeOf v + sizeOf t + sizeOf n)
+        return (TNTVertex v t n tangent)
+    poke ptr (TNTVertex v t n tangent) = do
+        poke (castPtr ptr) (TNVertex v t n)
+        pokeByteOff (castPtr ptr) (sizeOf v + sizeOf t + sizeOf n) tangent
