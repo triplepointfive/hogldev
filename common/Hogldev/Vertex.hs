@@ -1,6 +1,7 @@
 module Hogldev.Vertex (
     TexturedVertex(..)
   , TNVertex(..)
+  , TNTVertex(..)
 ) where
 
 import           Foreign.Storable

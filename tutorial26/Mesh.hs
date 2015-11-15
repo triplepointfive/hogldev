@@ -19,7 +19,7 @@ import           Graphics.GLUtil
 import           Graphics.Rendering.OpenGL
 
 import           Hogldev.Texture
-import           Hogldev.Vertex (TNVertex(..))
+import           Hogldev.Vertex (TNTVertex(..))
 import           Hogldev.Utils (bufferOffset)
 
 data MeshEntry = MeshEntry
@@ -34,16 +34,16 @@ data Mesh = Mesh
   , textures :: ![Texture]
   } deriving Show
 
-type VertexData = TNVertex
+type VertexData = TNTVertex
 
-vertexSize = sizeOf (TNVertex (Vertex3 0 0 0) (TexCoord2 0 0) (Vertex3 0 0 0))
+vertexSize = sizeOf (TNTVertex (Vertex3 0 0 0) (TexCoord2 0 0) (Vertex3 0 0 0) (Vertex3 0 0 0))
 
 loadMesh :: FilePath -> IO Mesh
 loadMesh fileName = S.readModelFileWithProcess fileName processes >>= either
     (error . printf "Error parsing '%s': '%s'" fileName)
     (initFromScene fileName)
   where
-    processes = [S.Triangulate, S.GenFaceNormals, S.FlipUVs]
+    processes = [S.Triangulate, S.GenFaceNormals, S.FlipUVs, S.CalcTangentSpace]
 
 initFromScene :: FilePath -> S.Scene -> IO Mesh
 initFromScene fileName scene = do
@@ -75,17 +75,20 @@ newMeshEntry mesh = initMeshEntry vertices indices (S._meshMaterialIndex mesh)
       meshTextures = if S.hasTextureCoords mesh 0
           then S._meshTextureCoords mesh
           else V.replicate verticesCount (S.V3 0 0 0)
-      vertices = V.toList $ V.zipWith3 toVert
+      vertices = V.toList $ V.zipWith4 toVert
           (S._meshVertices mesh)
           (S._meshNormals mesh)
           meshTextures
-      toVert :: S.V3 Float -> S.V3 Float -> S.V3 Float -> VertexData
-      toVert (S.V3 px py pz) (S.V3 nx ny nz) (S.V3 tx ty _) =
-          TNVertex pos text norm
+          (S._meshTangents mesh)
+      toVert :: S.V3 Float -> S.V3 Float -> S.V3 Float -> S.V3 Float
+             -> VertexData
+      toVert (S.V3 px py pz) (S.V3 nx ny nz) (S.V3 tx ty _) (S.V3 tnx tny tnz) =
+          TNTVertex pos text norm tans
         where
           pos  = Vertex3 (realToFrac px) (realToFrac py) (realToFrac pz)
           text = TexCoord2 (realToFrac tx) (realToFrac ty)
           norm = Vertex3 (realToFrac nx) (realToFrac ny) (realToFrac nz)
+          tans = Vertex3 (realToFrac tnx) (realToFrac tny) (realToFrac tnz)
       indices  = map fromIntegral $ V.toList $
           V.concatMap S._faceIndices (S._meshFaces mesh)
 
@@ -163,6 +166,15 @@ renderMesh Mesh{..} = do
               (bufferOffset (
                   sizeOf (Vertex3 0 0 0 :: Vertex3 GLfloat)
                 + sizeOf (TexCoord2 0 0 :: TexCoord2 GLfloat))
+              )
+            )
+        vertexAttribPointer vTangent $=
+            ( ToFloat
+            , VertexArrayDescriptor 3 Float (fromIntegral vertexSize)
+              (bufferOffset (
+                  sizeOf (Vertex3 0 0 0 :: Vertex3 GLfloat)    -- Position
+                + sizeOf (TexCoord2 0 0 :: TexCoord2 GLfloat)  -- Texture
+                + sizeOf (Vertex3 0 0 0 :: Vertex3 GLfloat))   -- Normal
               )
             )
 
