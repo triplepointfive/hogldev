@@ -12,10 +12,9 @@ import           Hogldev.Pipeline (
 import           Hogldev.Camera ( Camera(..), cameraOnKeyboard,
                     initCamera, cameraOnMouse, cameraOnRender
                  )
-import           Hogldev.CubemapTexture (CubeMapFilenames(..))
+import           Hogldev.Texture
 
-import           Skybox
-import           Hogldev.LightingTechnique
+import           LightingTechnique
 import           Mesh
 
 windowWidth = 1920
@@ -34,7 +33,7 @@ dirLight = DirectionLight
     { ambientColor     = Vertex3 1 1 1
     , ambientIntensity = 0.2
     , diffuseIntensity = 0.8
-    , diffuseDirection = Vertex3 1.0 (-1.0) 0.0
+    , diffuseDirection = Vertex3 1.0 0.0 0.0
     }
 
 main :: IO ()
@@ -54,44 +53,38 @@ main = do
 
     lightingEffect <- initLightingTechnique
     enableLightingTechnique lightingEffect
-    -- Set color texture unit.
-    setDirectionalLight lightingEffect dirLight
     setLightingTextureUnit lightingEffect 0
+    setLightingNormalMapTextureUnit lightingEffect 2
+    setDirectionalLight lightingEffect dirLight
 
     pointerPosition $= mousePos
 
-    tankMesh <- loadMesh "assets/phoenix_ugv.md2"
-    skyBox <- initSkybox persProjection cubeMapFilenames
+    tankMesh <- loadMesh "assets/box.obj"
+    Just texture <- textureLoad "assets/bricks.jpg" Texture2D
+    Just normalMap <- textureLoad "assets/normal_map.jpg" Texture2D
+    -- Right trivialNormalMap <- textureLoad Texture2D "assets/normal_map.jpg"
 
-    initializeGlutCallbacks tankMesh lightingEffect gScale cameraRef skyBox
+    initializeGlutCallbacks tankMesh lightingEffect gScale cameraRef
+        texture normalMap
     clearColor $= Color4 0 0 0 0
 
     mainLoop
   where
     newCamera = initCamera (Just
-        (Vector3 0 1 (-20), Vector3 0 0 1, Vector3 0 1 0)
+        (Vector3 0.5 1.025 0.25, Vector3 0 (-0.5) 1, Vector3 0 1 0)
         ) windowWidth windowHeight
     mousePos = Position (windowWidth `div` 2) (windowHeight `div` 2)
-
-    cubeMapFilenames = CubeMapFilenames
-        { directory    = "assets"
-        , posXFilename = "sp3right.jpg"
-        , negXFilename = "sp3left.jpg"
-        , posYFilename = "sp3top.jpg"
-        , negYFilename = "sp3bot.jpg"
-        , posZFilename = "sp3front.jpg"
-        , negZFilename = "sp3back.jpg"
-        }
 
 initializeGlutCallbacks :: Mesh
                         -> LightingTechnique
                         -> IORef GLfloat
                         -> IORef Camera
-                        -> Skybox
+                        -> Texture
+                        -> Texture
                         -> IO ()
-initializeGlutCallbacks tankMesh lightingEffect gScale cameraRef texture = do
+initializeGlutCallbacks tankMesh lightingEffect gScale cameraRef texture normalMap = do
     displayCallback $=
-        renderSceneCB tankMesh lightingEffect gScale cameraRef texture
+        renderSceneCB tankMesh lightingEffect gScale cameraRef texture normalMap
     idleCallback    $= Just (idleCB gScale cameraRef)
     specialCallback $= Just (specialKeyboardCB cameraRef)
     keyboardCallback $= Just keyboardCB
@@ -117,9 +110,10 @@ renderSceneCB :: Mesh
               -> LightingTechnique
               -> IORef GLfloat
               -> IORef Camera
-              -> Skybox
+              -> Texture
+              -> Texture
               -> DisplayCallback
-renderSceneCB tankMesh lightingEffect gScale cameraRef skyBox = do
+renderSceneCB tankMesh lightingEffect gScale cameraRef texture normalMap = do
     cameraRef $~! cameraOnRender
     gScaleVal <- readIORef gScale
     camera <- readIORef cameraRef
@@ -128,9 +122,12 @@ renderSceneCB tankMesh lightingEffect gScale cameraRef skyBox = do
 
     enableLightingTechnique lightingEffect
 
+    textureBind texture (TextureUnit 0)
+    textureBind normalMap (TextureUnit 2)
+
     setLightingWVP lightingEffect $ getTrans
         WVPPipeline {
-            worldInfo  = Vector3 0 (-5) 3,
+            worldInfo  = Vector3 0 0 3,
             scaleInfo  = Vector3 0.1 0.1 0.1,
             rotateInfo = Vector3 (-90) gScaleVal 0,
             persProj   = persProjection,
@@ -138,12 +135,11 @@ renderSceneCB tankMesh lightingEffect gScale cameraRef skyBox = do
         }
     setLightingWorldMatrix lightingEffect $ getTrans
         WPipeline {
-            worldInfo  = Vector3 0 (-5) 3,
+            worldInfo  = Vector3 0 0 3,
             scaleInfo  = Vector3 0.1 0.1 0.1,
             rotateInfo = Vector3 (-90) gScaleVal 0
         }
 
     renderMesh tankMesh
-    skyboxRender skyBox camera
 
     swapBuffers

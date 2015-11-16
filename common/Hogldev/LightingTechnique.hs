@@ -213,7 +213,7 @@ setLightingWorldMatrix :: LightingTechnique -> [[GLfloat]] -> IO ()
 setLightingWorldMatrix LightingTechnique{..} mat =
     uniformMat lWorldMatrixLoc $= mat
 
-setLightingTextureUnit :: LightingTechnique -> GLuint -> IO ()
+setLightingTextureUnit :: LightingTechnique -> GLint -> IO ()
 setLightingTextureUnit LightingTechnique{..} textureUnit =
     uniformScalar lSamplerLoc $= textureUnit
 

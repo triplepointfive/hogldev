@@ -1,5 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
-module Hogldev.LightingTechnique (
+module LightingTechnique (
     LightingTechnique(..)
   , DirectionLight(..)
   , PointLight(..)
@@ -10,6 +10,7 @@ module Hogldev.LightingTechnique (
   , setLightingWVP
   , setLightingWorldMatrix
   , setLightingTextureUnit
+  , setLightingNormalMapTextureUnit
   , setDirectionalLight
   , setEyeWorldPos
   , setMatSpecularPower
@@ -74,6 +75,7 @@ data LightingTechnique =
     , lWVPLoc                           :: !UniformLocation
     , lWorldMatrixLoc                   :: !UniformLocation
     , lSamplerLoc                       :: !UniformLocation
+    , lNormalSamplerLoc                 :: !UniformLocation
     , lDirLightColorLoc                 :: !UniformLocation
     , lDirLightAmbientIntensityColorLoc :: !UniformLocation
     , lDirLightDirectionLoc             :: !UniformLocation
@@ -121,6 +123,7 @@ initLightingTechnique = do
     wvpLoc <- getUniformLocation program "gWVP"
     worldMatrixLoc <- getUniformLocation program "gWorld"
     samplerLoc <- getUniformLocation program "gSampler"
+    normalSamplerLoc <- getUniformLocation program "gNormalMap"
     eyeWorldPosition <- getUniformLocation program "gEyeWorldPos"
 
     dirLightColorLoc <- getUniformLocation program "gDirectionalLight.Base.Color"
@@ -145,6 +148,7 @@ initLightingTechnique = do
         , lWVPLoc                           = wvpLoc
         , lWorldMatrixLoc                   = worldMatrixLoc
         , lSamplerLoc                       = samplerLoc
+        , lNormalSamplerLoc                 = normalSamplerLoc
         , lDirLightColorLoc                 = dirLightColorLoc
         , lDirLightAmbientIntensityColorLoc = dirLightAmbientIntensityLoc
         , lDirLightDirectionLoc             = dirLightDirectionLoc
@@ -216,6 +220,10 @@ setLightingWorldMatrix LightingTechnique{..} mat =
 setLightingTextureUnit :: LightingTechnique -> GLuint -> IO ()
 setLightingTextureUnit LightingTechnique{..} textureUnit =
     uniformScalar lSamplerLoc $= textureUnit
+
+setLightingNormalMapTextureUnit :: LightingTechnique -> GLint -> IO ()
+setLightingNormalMapTextureUnit LightingTechnique{..} textureUnit =
+    uniformScalar lNormalSamplerLoc $= textureUnit
 
 setDirectionalLight :: LightingTechnique -> DirectionLight -> IO ()
 setDirectionalLight LightingTechnique{..} DirectionLight{..} = do
