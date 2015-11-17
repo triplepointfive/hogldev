@@ -50,6 +50,7 @@ main = do
 
     gScale <- newIORef 0.0
     cameraRef <- newIORef newCamera
+    bampMapRef <- newIORef True
 
     lightingEffect <- initLightingTechnique
     enableLightingTechnique lightingEffect
@@ -59,13 +60,13 @@ main = do
 
     pointerPosition $= mousePos
 
-    tankMesh <- loadMesh "assets/box.obj"
+    boxMesh <- loadMesh "assets/box.obj"
     Just texture <- textureLoad "assets/bricks.jpg" Texture2D
     Just normalMap <- textureLoad "assets/normal_map.jpg" Texture2D
-    -- Right trivialNormalMap <- textureLoad Texture2D "assets/normal_map.jpg"
+    Just trivialNormalMap <- textureLoad "assets/normal_up.jpg" Texture2D
 
-    initializeGlutCallbacks tankMesh lightingEffect gScale cameraRef
-        texture normalMap
+    initializeGlutCallbacks boxMesh lightingEffect gScale cameraRef bampMapRef
+        texture normalMap trivialNormalMap
     clearColor $= Color4 0 0 0 0
 
     mainLoop
@@ -79,20 +80,23 @@ initializeGlutCallbacks :: Mesh
                         -> LightingTechnique
                         -> IORef GLfloat
                         -> IORef Camera
+                        -> IORef Bool
+                        -> Texture
                         -> Texture
                         -> Texture
                         -> IO ()
-initializeGlutCallbacks tankMesh lightingEffect gScale cameraRef texture normalMap = do
+initializeGlutCallbacks boxMesh lightingEffect gScale cameraRef bampMapRef texture normalMap trivialNormalMap = do
     displayCallback $=
-        renderSceneCB tankMesh lightingEffect gScale cameraRef texture normalMap
+        renderSceneCB boxMesh lightingEffect gScale cameraRef bampMapRef texture normalMap trivialNormalMap
     idleCallback    $= Just (idleCB gScale cameraRef)
     specialCallback $= Just (specialKeyboardCB cameraRef)
-    keyboardCallback $= Just keyboardCB
+    keyboardCallback $= Just (keyboardCB bampMapRef)
     passiveMotionCallback $= Just (passiveMotionCB cameraRef)
 
-keyboardCB :: KeyboardCallback
-keyboardCB 'q' _ = exitSuccess
-keyboardCB _ _ = return ()
+keyboardCB :: IORef Bool -> KeyboardCallback
+keyboardCB _ 'q' _ = exitSuccess
+keyboardCB bumpMapRef 'b' _ = modifyIORef bumpMapRef not
+keyboardCB _ _ _ = return ()
 
 specialKeyboardCB :: IORef Camera -> SpecialCallback
 specialKeyboardCB cameraRef key _ = cameraRef $~! cameraOnKeyboard key
@@ -110,25 +114,30 @@ renderSceneCB :: Mesh
               -> LightingTechnique
               -> IORef GLfloat
               -> IORef Camera
+              -> IORef Bool
+              -> Texture
               -> Texture
               -> Texture
               -> DisplayCallback
-renderSceneCB tankMesh lightingEffect gScale cameraRef texture normalMap = do
+renderSceneCB boxMesh lightingEffect gScale cameraRef bampMapRef texture normalMap trivialNormalMap = do
     cameraRef $~! cameraOnRender
     gScaleVal <- readIORef gScale
     camera <- readIORef cameraRef
+    bampMapEnabled <- readIORef bampMapRef
 
     clear [ColorBuffer, DepthBuffer]
 
     enableLightingTechnique lightingEffect
 
     textureBind texture (TextureUnit 0)
-    textureBind normalMap (TextureUnit 2)
+    if bampMapEnabled
+        then textureBind normalMap (TextureUnit 2)
+        else textureBind trivialNormalMap (TextureUnit 2)
 
     setLightingWVP lightingEffect $ getTrans
         WVPPipeline {
             worldInfo  = Vector3 0 0 3,
-            scaleInfo  = Vector3 0.1 0.1 0.1,
+            scaleInfo  = Vector3 1 1 1,
             rotateInfo = Vector3 (-90) gScaleVal 0,
             persProj   = persProjection,
             pipeCamera = camera
@@ -136,10 +145,10 @@ renderSceneCB tankMesh lightingEffect gScale cameraRef texture normalMap = do
     setLightingWorldMatrix lightingEffect $ getTrans
         WPipeline {
             worldInfo  = Vector3 0 0 3,
-            scaleInfo  = Vector3 0.1 0.1 0.1,
+            scaleInfo  = Vector3 1 1 1,
             rotateInfo = Vector3 (-90) gScaleVal 0
         }
 
-    renderMesh tankMesh
+    renderMesh boxMesh
 
     swapBuffers
