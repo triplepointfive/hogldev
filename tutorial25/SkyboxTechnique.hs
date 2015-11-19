@@ -27,7 +27,7 @@ initSkyboxTechnique = do
     finalize program
 
     wvpLoc <- getUniformLocation program "gWVP"
-    textureLoc <- getUniformLocation program "gCubemapTexture;"
+    textureLoc <- getUniformLocation program "gCubemapTexture"
 
     return SkyboxTechnique
         { lProgram     = program

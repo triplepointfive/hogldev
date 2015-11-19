@@ -12,9 +12,8 @@ import           Hogldev.Pipeline (
 import           Hogldev.Camera ( Camera(..), cameraOnKeyboard,
                     initCamera, cameraOnMouse, cameraOnRender
                  )
-import           Hogldev.Texture
 
-import           Hogldev.LightingTechnique
+import           BillboardList
 import           Mesh
 
 windowWidth = 1920

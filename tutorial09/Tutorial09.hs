@@ -117,5 +117,5 @@ renderSceneCB vbo gWorldLocation gScale = do
     vertexAttribArray vPosition $= Disabled
 
     swapBuffers
- where
+  where
     vPosition = AttribLocation 0
