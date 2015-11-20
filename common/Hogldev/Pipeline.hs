@@ -12,8 +12,8 @@ import           Hogldev.Math3D
 import           Hogldev.Utils
 import           Hogldev.Camera
 
-data Pipeline =
-    WPipeline
+data Pipeline
+    = WPipeline
         { scaleInfo  :: Vector3 GLfloat
         , worldInfo  :: Vector3 GLfloat
         , rotateInfo :: Vector3 GLfloat
@@ -31,13 +31,21 @@ data Pipeline =
         , persProj   :: PersProj
         , pipeCamera :: Camera
         }
+    | VPPipeline
+        { persProj   :: PersProj
+        , pipeCamera :: Camera
+        }
     deriving Show
 
 getTrans :: Pipeline -> Matrix4
 getTrans WPipeline{..}   = worldTrans scaleInfo worldInfo rotateInfo
 getTrans WPPipeline{..}  = projTrans scaleInfo worldInfo rotateInfo persProj
+getTrans VPPipeline{..} = vpTrans persProj pipeCamera
 getTrans WVPPipeline{..} =
     projViewTrans scaleInfo worldInfo rotateInfo persProj pipeCamera
+
+vpTrans :: PersProj -> Camera -> Matrix4
+vpTrans persProj camera = perspProjTrans persProj !*! cameraTrans camera
 
 worldTrans :: Vector3 GLfloat
            -> Vector3 GLfloat

@@ -46,7 +46,7 @@ initBillboardList texFilename = do
       where
         positions :: [Vertex3 GLfloat]
         positions = map (fmap fromIntegral)
-            [Vertex3 x 0 y| x <- [0..10], y <- [0..10]]
+            [Vertex3 x 0 y| x <- [0..numRows - 1], y <- [0..numColumns - 1]]
         numVertices = length positions
         vertexSize  = sizeOf (head positions)
         size        = fromIntegral (numVertices * vertexSize)
@@ -56,6 +56,7 @@ render BillboardList{..} vp cameraPos = do
     enableBillboardTechnique   technique
     setBillboardTechniqueVP    technique vp
     setBillboardCameraPosition technique cameraPos
+    setBillboardTechniqueColorUnit technique 0
 
     textureBind texture (TextureUnit 0)
 
