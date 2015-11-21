@@ -346,8 +346,8 @@ executable tutorial26
   default-language:    Haskell2010
   ghc-options:         -W
 
-executable tutorial27
-  main-is:             Tutorial27.hs
+executable tutorial28
+  main-is:             Tutorial28.hs
   other-modules:       Mesh
   build-depends:       base >=4.6 && <4.9
                      , GLUT
@@ -358,7 +358,7 @@ executable tutorial27
                      , soten
                      , vector
                      , filepath
-  hs-source-dirs:      tutorial27/
+  hs-source-dirs:      tutorial28/
   default-language:    Haskell2010
   ghc-options:         -W
 
