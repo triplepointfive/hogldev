@@ -24,9 +24,9 @@ data BillboardTechnique =
 initBillboardTechnique :: IO BillboardTechnique
 initBillboardTechnique = do
     program <- createProgram
-    addShader program "tutorial27/billboard.vs" VertexShader
-    addShader program "tutorial27/billboard.fs" FragmentShader
-    addShader program "tutorial27/billboard.gs" GeometryShader
+    addShader program "tutorial28/billboard.vs" VertexShader
+    addShader program "tutorial28/billboard.fs" FragmentShader
+    addShader program "tutorial28/billboard.gs" GeometryShader
     finalize program
 
     wvpLoc <- getUniformLocation program "gVP"
