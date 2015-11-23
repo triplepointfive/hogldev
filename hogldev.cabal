@@ -20,6 +20,7 @@ library
                      , Hogldev.LightingTechnique
                      , Hogldev.Utils
                      , Hogldev.Camera
+                     , Hogldev.RandomTexture
                      , Hogldev.Technique
                      , Hogldev.Texture
                      , Hogldev.Vertex
@@ -29,6 +30,7 @@ library
                      , linear
                      , GLUtil
                      , filepath
+                     , random
   default-language:    Haskell2010
   ghc-options:         -W
 
@@ -343,6 +345,22 @@ executable tutorial26
                      , vector
                      , filepath
   hs-source-dirs:      tutorial26/
+  default-language:    Haskell2010
+  ghc-options:         -W
+
+executable tutorial27
+  main-is:             Tutorial27.hs
+  other-modules:       Mesh
+  build-depends:       base >=4.6 && <4.9
+                     , GLUT
+                     , OpenGL
+                     , GLUtil
+                     , hogldev
+                     , split
+                     , soten
+                     , vector
+                     , filepath
+  hs-source-dirs:      tutorial27/
   default-language:    Haskell2010
   ghc-options:         -W
 
