@@ -1,5 +1,6 @@
 module Main where
 
+import           Control.Monad (forM_)
 import           Data.IORef
 import           Graphics.Rendering.OpenGL
 import           Graphics.UI.GLUT hiding (exit)
@@ -14,13 +15,14 @@ import           Hogldev.Camera ( Camera(..), cameraOnKeyboard,
                  )
 
 import           Hogldev.LightingTechnique
-import           Hogldev.Texture
-
-import           BillboardList
 import           Mesh
 
-windowWidth = 1920
-windowHeight = 1080
+import           SimpleColorTechnique
+import           PickingTexture
+import           PickingTechnique
+
+windowWidth = 1680
+windowHeight = 1050
 
 persProjection = PersProj
                  { persFOV   = 60
@@ -33,10 +35,14 @@ persProjection = PersProj
 dirLight :: DirectionLight
 dirLight = DirectionLight
     { ambientColor     = Vertex3 1 1 1
-    , ambientIntensity = 0.2
-    , diffuseIntensity = 0.8
-    , diffuseDirection = Vertex3 1.0 0.0 0.0
+    , ambientIntensity = 1.0
+    , diffuseIntensity = 0.01
+    , diffuseDirection = Vertex3 1.0 (-1.0) 0.0
     }
+
+
+worldPos :: [(GLuint, Vector3 GLfloat)]
+worldPos = zip [0..] [Vector3 (-10.0) 0.0 5.0, Vector3 10.0 0.0 5.0]
 
 main :: IO ()
 main = do
@@ -60,31 +66,33 @@ main = do
 
     pointerPosition $= mousePos
 
-    boxMesh <- loadMesh "assets/quad.obj"
-    Just texture <- textureLoad "assets/bricks.jpg" Texture2D
-    billboardList <- initBillboardList "assets/monster_hellknight.png"
+    pickingTexture <- initPickingTexture windowWidth windowHeight
+    pickingEffect <- initPickingTechnique
+    simpleColorEffect <- initSimpleColorTechnique
+    mesh <- loadMesh "assets/spider.obj"
 
-    initializeGlutCallbacks boxMesh lightingEffect gScale cameraRef
-        texture billboardList
+    initializeGlutCallbacks mesh lightingEffect pickingEffect simpleColorEffect
+        gScale cameraRef pickingTexture
     clearColor $= Color4 0 0 0 0
 
     mainLoop
   where
     newCamera = initCamera (Just
-        (Vector3 0 1 (-1), Vector3 0 (-0.5) 1, Vector3 0 1 0)
+        (Vector3 0 5 (-22.0), Vector3 0 (-0.2) 1, Vector3 0 1 0)
         ) windowWidth windowHeight
     mousePos = Position (windowWidth `div` 2) (windowHeight `div` 2)
 
 initializeGlutCallbacks :: Mesh
                         -> LightingTechnique
+                        -> PickingTechnique
+                        -> SimpleColorTechnique
                         -> IORef GLfloat
                         -> IORef Camera
-                        -> Texture
-                        -> BillboardList
+                        -> PickingTexture
                         -> IO ()
-initializeGlutCallbacks boxMesh lightingEffect gScale cameraRef texture billboardList = do
+initializeGlutCallbacks mesh lightingEffect pickingEffect simpleColorEffect gScale cameraRef pickingTexture = do
     displayCallback $=
-        renderSceneCB boxMesh lightingEffect gScale cameraRef texture billboardList
+        renderSceneCB mesh lightingEffect pickingEffect simpleColorEffect gScale cameraRef pickingTexture
     idleCallback    $= Just (idleCB gScale cameraRef)
     specialCallback $= Just (specialKeyboardCB cameraRef)
     keyboardCallback $= Just keyboardCB
@@ -108,40 +116,65 @@ idleCB gScale cameraRef = do
 
 renderSceneCB :: Mesh
               -> LightingTechnique
+              -> PickingTechnique
+              -> SimpleColorTechnique
               -> IORef GLfloat
               -> IORef Camera
-              -> Texture
-              -> BillboardList
+              -> PickingTexture
               -> DisplayCallback
-renderSceneCB boxMesh lightingEffect gScale cameraRef texture billboardList = do
+renderSceneCB mesh lightingEffect pickingEffect simpleColorEffect gScale cameraRef pickingTexture = do
     cameraRef $~! cameraOnRender
     gScaleVal <- readIORef gScale
     camera <- readIORef cameraRef
 
-    clear [ColorBuffer, DepthBuffer]
+    let pickingPhase = do
+            enableWriting pickingTexture
 
-    enableLightingTechnique lightingEffect
+            clear [ColorBuffer, DepthBuffer]
 
-    textureBind texture (TextureUnit 0)
+            enablePickingTechnique pickingEffect
 
-    setLightingWVP lightingEffect $ getTrans
-        WVPPipeline {
-            worldInfo  = Vector3 0 0 3,
-            scaleInfo  = Vector3 20 20 1,
-            rotateInfo = Vector3 (-90) 0 0,
-            persProj   = persProjection,
-            pipeCamera = camera
-        }
-    setLightingWorldMatrix lightingEffect $ getTrans
-        WPipeline {
-            worldInfo  = Vector3 0 0 3,
-            scaleInfo  = Vector3 20 20 1,
-            rotateInfo = Vector3 (-90) 0 0
-        }
+            forM_ worldPos $ \ (i, pos) -> do
+                setPickingTechniqueWVP pickingEffect $ getTrans
+                    WVPPipeline {
+                        worldInfo  = pos,
+                        scaleInfo  = Vector3 0.1 0.1 0.1,
+                        rotateInfo = Vector3 (-90) 90 0,
+                        persProj   = persProjection,
+                        pipeCamera = camera
+                    }
 
-    renderMesh boxMesh
+                setPickingObjectIndex pickingEffect i
 
-    render billboardList (vpTrans camera) (cameraPos camera)
+                renderMesh mesh -- pickingEffect
+
+            disableWriting pickingTexture
+
+        renderPhase = do
+            clear [ColorBuffer, DepthBuffer]
+
+            enableLightingTechnique lightingEffect
+            setEyeWorldPos lightingEffect (cameraPos camera)
+
+            forM_ worldPos $ \ (_, pos) -> do
+                setLightingWVP lightingEffect $ getTrans
+                    WVPPipeline {
+                        worldInfo  = pos,
+                        scaleInfo  = Vector3 0.1 0.1 0.1,
+                        rotateInfo = Vector3 (-90) 90 0,
+                        persProj   = persProjection,
+                        pipeCamera = camera
+                    }
+                setLightingWorldMatrix lightingEffect $ getTrans
+                    WPipeline {
+                        worldInfo  = pos,
+                        scaleInfo  = Vector3 0.1 0.1 0.1,
+                        rotateInfo = Vector3 (-90) 90 0
+                    }
+                renderMesh mesh
+
+    pickingPhase
+    renderPhase
 
     swapBuffers
   where
