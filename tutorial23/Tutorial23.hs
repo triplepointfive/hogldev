@@ -13,7 +13,7 @@ import           Hogldev.Camera (
                     Camera(..), cameraOnKeyboard,
                     initCamera, cameraOnMouse, cameraOnRender
                  )
-import           Mesh
+import           Hogldev.Mesh
 import           ShadowMapTechnique
 import           ShadowMapFBO
 

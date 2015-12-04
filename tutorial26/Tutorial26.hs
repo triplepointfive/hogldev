@@ -15,7 +15,7 @@ import           Hogldev.Camera ( Camera(..), cameraOnKeyboard,
 import           Hogldev.Texture
 
 import           LightingTechnique
-import           Mesh
+import           Hogldev.Mesh
 
 windowWidth = 1920
 windowHeight = 1080

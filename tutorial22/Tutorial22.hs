@@ -15,7 +15,7 @@ import           Hogldev.Camera (
                  )
 
 import           Hogldev.LightingTechnique
-import           Mesh
+import           Hogldev.Mesh
 
 windowWidth = 1024
 windowHeight = 768

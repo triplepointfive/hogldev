@@ -17,7 +17,7 @@ import           Hogldev.LightingTechnique
 import           Hogldev.Texture
 
 import           BillboardList
-import           Mesh
+import           Hogldev.Mesh
 
 windowWidth = 1920
 windowHeight = 1080

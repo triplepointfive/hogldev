@@ -17,8 +17,8 @@ import           Hogldev.Camera ( Camera(..), cameraOnKeyboard,
                     initCamera, cameraOnMouse, cameraOnRender
                  )
 
+import           Hogldev.Mesh
 import           LightingTechnique
-import           Mesh
 import           ShadowMapTechnique
 
 windowWidth = 1920
