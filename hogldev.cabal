@@ -35,7 +35,7 @@ library
                      , random
                      , vector
   default-language:    Haskell2010
-  ghc-options:         -W
+  ghc-options:         -Wall
 
 executable tutorial01
   main-is:             Tutorial01.hs
@@ -44,7 +44,7 @@ executable tutorial01
                      , OpenGL
   hs-source-dirs:      tutorial01/
   default-language:    Haskell2010
-  ghc-options:         -W
+  ghc-options:         -Wall
 
 executable tutorial02
   main-is:             Tutorial02.hs
@@ -54,7 +54,7 @@ executable tutorial02
                      , hogldev
   hs-source-dirs:      tutorial02/
   default-language:    Haskell2010
-  ghc-options:         -W
+  ghc-options:         -Wall
 
 executable tutorial03
   main-is:             Tutorial03.hs
@@ -64,7 +64,7 @@ executable tutorial03
                      , hogldev
   hs-source-dirs:      tutorial03/
   default-language:    Haskell2010
-  ghc-options:         -W
+  ghc-options:         -Wall
 
 executable tutorial04
   main-is:             Tutorial04.hs
@@ -74,7 +74,7 @@ executable tutorial04
                      , hogldev
   hs-source-dirs:      tutorial04/
   default-language:    Haskell2010
-  ghc-options:         -W
+  ghc-options:         -Wall
 
 executable tutorial05
   main-is:             Tutorial05.hs
@@ -84,7 +84,7 @@ executable tutorial05
                      , hogldev
   hs-source-dirs:      tutorial05/
   default-language:    Haskell2010
-  ghc-options:         -W
+  ghc-options:         -Wall
 
 executable tutorial06
   main-is:             Tutorial06.hs
@@ -95,7 +95,7 @@ executable tutorial06
                      , hogldev
   hs-source-dirs:      tutorial06/
   default-language:    Haskell2010
-  ghc-options:         -W
+  ghc-options:         -Wall
 
 executable tutorial07
   main-is:             Tutorial07.hs
@@ -106,7 +106,7 @@ executable tutorial07
                      , hogldev
   hs-source-dirs:      tutorial07/
   default-language:    Haskell2010
-  ghc-options:         -W
+  ghc-options:         -Wall
 
 executable tutorial08
   main-is:             Tutorial08.hs
@@ -117,7 +117,7 @@ executable tutorial08
                      , hogldev
   hs-source-dirs:      tutorial08/
   default-language:    Haskell2010
-  ghc-options:         -W
+  ghc-options:         -Wall
 
 executable tutorial09
   main-is:             Tutorial09.hs
@@ -128,7 +128,7 @@ executable tutorial09
                      , hogldev
   hs-source-dirs:      tutorial09/
   default-language:    Haskell2010
-  ghc-options:         -W
+  ghc-options:         -Wall
 
 executable tutorial10
   main-is:             Tutorial10.hs
@@ -139,7 +139,7 @@ executable tutorial10
                      , hogldev
   hs-source-dirs:      tutorial10/
   default-language:    Haskell2010
-  ghc-options:         -W
+  ghc-options:         -Wall
 
 executable tutorial11
   main-is:             Tutorial11.hs
@@ -150,7 +150,7 @@ executable tutorial11
                      , hogldev
   hs-source-dirs:      tutorial11/
   default-language:    Haskell2010
-  ghc-options:         -W
+  ghc-options:         -Wall
 
 executable tutorial12
   main-is:             Tutorial12.hs
@@ -161,7 +161,7 @@ executable tutorial12
                      , hogldev
   hs-source-dirs:      tutorial12/
   default-language:    Haskell2010
-  ghc-options:         -W
+  ghc-options:         -Wall
 
 executable tutorial13
   main-is:             Tutorial13.hs
@@ -172,7 +172,7 @@ executable tutorial13
                      , hogldev
   hs-source-dirs:      tutorial13/
   default-language:    Haskell2010
-  ghc-options:         -W
+  ghc-options:         -Wall
 
 executable tutorial14
   main-is:             Tutorial14.hs
@@ -183,7 +183,7 @@ executable tutorial14
                      , hogldev
   hs-source-dirs:      tutorial14/
   default-language:    Haskell2010
-  ghc-options:         -W
+  ghc-options:         -Wall
 
 executable tutorial15
   main-is:             Tutorial15.hs
@@ -194,7 +194,7 @@ executable tutorial15
                      , hogldev
   hs-source-dirs:      tutorial15/
   default-language:    Haskell2010
-  ghc-options:         -W
+  ghc-options:         -Wall
 
 executable tutorial16
   main-is:             Tutorial16.hs
@@ -205,7 +205,7 @@ executable tutorial16
                      , hogldev
   hs-source-dirs:      tutorial16/
   default-language:    Haskell2010
-  ghc-options:         -W
+  ghc-options:         -Wall
 
 executable tutorial17
   main-is:             Tutorial17.hs
@@ -217,7 +217,7 @@ executable tutorial17
                      , hogldev
   hs-source-dirs:      tutorial17/
   default-language:    Haskell2010
-  ghc-options:         -W
+  ghc-options:         -Wall
 
 executable tutorial18
   main-is:             Tutorial18.hs
@@ -230,7 +230,7 @@ executable tutorial18
                      , split
   hs-source-dirs:      tutorial18/
   default-language:    Haskell2010
-  ghc-options:         -W
+  ghc-options:         -Wall
 
 executable tutorial19
   main-is:             Tutorial19.hs
@@ -243,7 +243,7 @@ executable tutorial19
                      , split
   hs-source-dirs:      tutorial19/
   default-language:    Haskell2010
-  ghc-options:         -W
+  ghc-options:         -Wall
 
 executable tutorial20
   main-is:             Tutorial20.hs
@@ -256,7 +256,7 @@ executable tutorial20
                      , split
   hs-source-dirs:      tutorial20/
   default-language:    Haskell2010
-  ghc-options:         -W
+  ghc-options:         -Wall
 
 executable tutorial21
   main-is:             Tutorial21.hs
@@ -269,7 +269,7 @@ executable tutorial21
                      , split
   hs-source-dirs:      tutorial21/
   default-language:    Haskell2010
-  ghc-options:         -W
+  ghc-options:         -Wall
 
 executable tutorial22
   main-is:             Tutorial22.hs
@@ -284,7 +284,7 @@ executable tutorial22
                      , filepath
   hs-source-dirs:      tutorial22/
   default-language:    Haskell2010
-  ghc-options:         -W
+  ghc-options:         -Wall
 
 executable tutorial23
   main-is:             Tutorial23.hs
@@ -299,7 +299,7 @@ executable tutorial23
                      , filepath
   hs-source-dirs:      tutorial23/
   default-language:    Haskell2010
-  ghc-options:         -W
+  ghc-options:         -Wall
 
 executable tutorial24
   main-is:             Tutorial24.hs
@@ -314,7 +314,7 @@ executable tutorial24
                      , filepath
   hs-source-dirs:      tutorial24/
   default-language:    Haskell2010
-  ghc-options:         -W
+  ghc-options:         -Wall
 
 executable tutorial25
   main-is:             Tutorial25.hs
@@ -329,7 +329,7 @@ executable tutorial25
                      , filepath
   hs-source-dirs:      tutorial25/
   default-language:    Haskell2010
-  ghc-options:         -W
+  ghc-options:         -Wall
 
 executable tutorial26
   main-is:             Tutorial26.hs
@@ -344,7 +344,7 @@ executable tutorial26
                      , filepath
   hs-source-dirs:      tutorial26/
   default-language:    Haskell2010
-  ghc-options:         -W
+  ghc-options:         -Wall
 
 executable tutorial27
   main-is:             Tutorial27.hs
@@ -359,7 +359,7 @@ executable tutorial27
                      , filepath
   hs-source-dirs:      tutorial27/
   default-language:    Haskell2010
-  ghc-options:         -W
+  ghc-options:         -Wall
 
 -- executable tutorial28
 --   main-is:             Tutorial28.hs
@@ -375,7 +375,7 @@ executable tutorial27
 --                      , filepath
 --   hs-source-dirs:      tutorial28/
 --   default-language:    Haskell2010
---   ghc-options:         -W
+--   ghc-options:         -Wall
 
 -- executable tutorial29
 --   main-is:             Tutorial29.hs
@@ -391,7 +391,7 @@ executable tutorial27
 --                      , filepath
 --   hs-source-dirs:      tutorial29/
 --   default-language:    Haskell2010
---   ghc-options:         -W
+--   ghc-options:         -Wall
 
 -- executable tutorial30
 --   main-is:             Tutorial30.hs
@@ -407,7 +407,7 @@ executable tutorial27
 --                      , filepath
 --   hs-source-dirs:      tutorial30/
 --   default-language:    Haskell2010
---   ghc-options:         -W
+--   ghc-options:         -Wall
 
 source-repository head
   type:     git

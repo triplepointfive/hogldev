@@ -1,10 +1,9 @@
 module Main where
 
-import           Control.Monad (unless)
+import           Control.Monad (unless, void)
 import           Data.IORef
-import           Graphics.Rendering.OpenGL
 import           Graphics.GLUtil
-import           Graphics.UI.GLUT hiding (exit)
+import           Graphics.UI.GLUT hiding (exit, shaderType)
 import           Foreign.Marshal.Array (withArray)
 import           Foreign.Storable (sizeOf)
 import           System.Exit (exitFailure)
@@ -12,9 +11,11 @@ import           System.Exit (exitFailure)
 import           Hogldev.Pipeline (Pipeline(..), getTrans)
 import           Hogldev.Utils (PersProj(..), bufferOffset)
 
+windowWidth, windowHeight :: GLsizei
 windowWidth = 1024
 windowHeight = 768
 
+persProjection :: PersProj
 persProjection = PersProj
                  { persFOV   = 30
                  , persWidth = fromIntegral windowWidth
@@ -23,42 +24,13 @@ persProjection = PersProj
                  , persZFar  = 1000
                  }
 
-vertexShader = unlines
-    [ "#version 330"
-    , ""
-    , "layout (location = 0) in vec3 Position;"
-    , ""
-    , "uniform mat4 gWorld;"
-    , ""
-    , "out vec4 Color;"
-    , ""
-    , "void main()"
-    , "{"
-    , "  gl_Position = gWorld * vec4(Position, 1.0);"
-    , "  Color = vec4(clamp(Position, 0.0, 1.0), 1.0);"
-    , "}"
-    ]
-
-fragmentShader = unlines
-    [ "#version 330"
-    , ""
-    , "in vec4 Color;"
-    , ""
-    , "out vec4 FragColor;"
-    , ""
-    , "void main()"
-    , "{"
-    , "  FragColor = Color;"
-    , "}"
-    ]
-
 main :: IO ()
 main = do
-    getArgsAndInitialize
+    void getArgsAndInitialize
     initialDisplayMode $= [DoubleBuffered, RGBAMode]
     initialWindowSize $= Size windowWidth windowHeight
     initialWindowPosition $= Position 100 100
-    createWindow "Tutorial 12"
+    void $ createWindow "Tutorial 12"
 
     vbo <- createVertexBuffer
     ibo <- createIndexBuffer
@@ -176,7 +148,7 @@ renderSceneCB vbo ibo gWorldLocation gScale = do
     vertexAttribArray vPosition $= Enabled
     bindBuffer ArrayBuffer $= Just vbo
     vertexAttribPointer vPosition $=
-        (ToFloat, VertexArrayDescriptor 3 Float 0 (bufferOffset 0))
+        (ToFloat, VertexArrayDescriptor 3 Float 0 (bufferOffset (0 :: Integer)))
     bindBuffer ElementArrayBuffer $= Just ibo
 
     drawIndexedTris 4
