@@ -14,7 +14,6 @@ import           Hogldev.Pipeline (
                     Pipeline(..), getTrans,
                     PersProj(..), Camera(..)
                  )
-import           Hogldev.Utils (bufferOffset)
 
 windowWidth = 1024
 windowHeight = 768
@@ -157,7 +156,7 @@ renderSceneCB vbo ibo gWorldLocation gScale = do
     vertexAttribArray vPosition $= Enabled
     bindBuffer ArrayBuffer $= Just vbo
     vertexAttribPointer vPosition $=
-        (ToFloat, VertexArrayDescriptor 3 Float 0 (bufferOffset 0))
+        (ToFloat, VertexArrayDescriptor 3 Float 0 offset0)
     bindBuffer ElementArrayBuffer $= Just ibo
 
     drawIndexedTris 4

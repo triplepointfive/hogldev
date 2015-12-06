@@ -14,7 +14,6 @@ import           Hogldev.Pipeline (
                     Pipeline(..), getTrans,
                     PersProj(..)
                  )
-import           Hogldev.Utils (bufferOffset)
 import           Hogldev.Camera (
                     Camera(..), cameraOnKeyboard,
                     initCamera, cameraOnMouse, cameraOnRender
@@ -201,13 +200,12 @@ renderSceneCB vbo ibo gWVPLocation gScale cameraRef texture = do
 
     vertexAttribPointer vPosition $=
         ( ToFloat
-        , VertexArrayDescriptor 3 Float (fromIntegral vertexSize)
-          (bufferOffset 0)
+        , VertexArrayDescriptor 3 Float (fromIntegral vertexSize) offset0
         )
     vertexAttribPointer vTextCoord $=
         ( ToFloat
         , VertexArrayDescriptor 2 Float (fromIntegral vertexSize)
-          (bufferOffset (sizeOf (Vertex3 0 0 0 :: Vertex3 GLfloat)))
+          (offsetPtr (sizeOf (Vertex3 0 0 0 :: Vertex3 GLfloat)))
         )
 
     bindBuffer ElementArrayBuffer $= Just ibo

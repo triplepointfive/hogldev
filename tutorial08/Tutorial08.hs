@@ -10,7 +10,6 @@ import           Foreign.Storable (sizeOf)
 import           System.Exit (exitFailure)
 
 import           Hogldev.Math3D (scaleMatrix)
-import           Hogldev.Utils (bufferOffset)
 
 main :: IO ()
 main = do
@@ -110,7 +109,7 @@ renderSceneCB vbo gWorldLocation gScale = do
     vertexAttribArray vPosition $= Enabled
     bindBuffer ArrayBuffer $= Just vbo
     vertexAttribPointer vPosition $=
-        (ToFloat, VertexArrayDescriptor 3 Float 0 (bufferOffset 0))
+        (ToFloat, VertexArrayDescriptor 3 Float 0 offset0)
 
     drawArrays Triangles 0 3
 

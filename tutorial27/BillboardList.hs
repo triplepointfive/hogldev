@@ -9,10 +9,10 @@ import           Foreign.Marshal.Array (withArray)
 import           Foreign.Storable (sizeOf)
 
 import           Graphics.Rendering.OpenGL
+import           Graphics.GLUtil (offset0)
 
 import           Hogldev.Texture
 import           Hogldev.Math3D (Matrix4)
-import           Hogldev.Utils (bufferOffset)
 import           BillboardTechnique
 
 numRows = 10
@@ -64,7 +64,7 @@ render BillboardList{..} vp cameraPos = do
 
     bindBuffer ArrayBuffer $= Just vb
     vertexAttribPointer vPosition $=
-        (ToFloat, VertexArrayDescriptor 3 Float 0 (bufferOffset 0))
+        (ToFloat, VertexArrayDescriptor 3 Float 0 offset0)
 
     drawArrays Points 0 (numRows * numColumns)
 

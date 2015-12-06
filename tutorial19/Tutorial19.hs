@@ -13,7 +13,7 @@ import           Hogldev.Pipeline (
                     Pipeline(..), getTrans,
                     PersProj(..)
                  )
-import           Hogldev.Utils (bufferOffset, normalizeVertex)
+import           Hogldev.Utils (normalizeVertex)
 import           Hogldev.Camera (
                     Camera(..), cameraOnKeyboard,
                     initCamera, cameraOnMouse, cameraOnRender
@@ -237,17 +237,17 @@ renderSceneCB vbo ibo effect dirLight gScale cameraRef texture = do
     vertexAttribPointer vPosition $=
         ( ToFloat
         , VertexArrayDescriptor 3 Float (fromIntegral vertexSize)
-          (bufferOffset 0)
+          offset0
         )
     vertexAttribPointer vTextCoord $=
         ( ToFloat
         , VertexArrayDescriptor 2 Float (fromIntegral vertexSize)
-          (bufferOffset (sizeOf (Vertex3 0 0 0 :: Vertex3 GLfloat)))
+          (offsetPtr (sizeOf (Vertex3 0 0 0 :: Vertex3 GLfloat)))
         )
     vertexAttribPointer vNormals $=
         ( ToFloat
         , VertexArrayDescriptor 3 Float (fromIntegral vertexSize)
-          (bufferOffset (
+          (offsetPtr (
               sizeOf (Vertex3 0 0 0 :: Vertex3 GLfloat)
             + sizeOf (TexCoord2 0 0 :: TexCoord2 GLfloat))
           )

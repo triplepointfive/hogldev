@@ -91,17 +91,17 @@ renderPS deltaTimeMillis vp cameraPos particleSystem = do
         vertexAttribPointer vPosition $=
             ( ToFloat
             , VertexArrayDescriptor 3 Float (fromIntegral vertexSize)
-              (bufferOffset 0)
+              offset0
             )
         vertexAttribPointer vTextCoord $=
             ( ToFloat
             , VertexArrayDescriptor 2 Float (fromIntegral vertexSize)
-              (bufferOffset (sizeOf (Vertex3 0 0 0 :: Vertex3 GLfloat)))
+              (offsetPtr (sizeOf (Vertex3 0 0 0 :: Vertex3 GLfloat)))
             )
         vertexAttribPointer vNormals $=
             ( ToFloat
             , VertexArrayDescriptor 3 Float (fromIntegral vertexSize)
-              (bufferOffset (
+              (offsetPtr (
                   sizeOf (Vertex3 0 0 0 :: Vertex3 GLfloat)
                 + sizeOf (TexCoord2 0 0 :: TexCoord2 GLfloat))
               )
@@ -109,7 +109,7 @@ renderPS deltaTimeMillis vp cameraPos particleSystem = do
         vertexAttribPointer vTangent $=
             ( ToFloat
             , VertexArrayDescriptor 3 Float (fromIntegral vertexSize)
-              (bufferOffset (
+              (offsetPtr (
                   sizeOf (Vertex3 0 0 0 :: Vertex3 GLfloat)    -- Position
                 + sizeOf (TexCoord2 0 0 :: TexCoord2 GLfloat)  -- Texture
                 + sizeOf (Vertex3 0 0 0 :: Vertex3 GLfloat))   -- Normal
@@ -148,7 +148,7 @@ renderPS deltaTimeMillis vp cameraPos particleSystem = do
         vertexAttribPointer vPosition $=
             ( ToFloat
             , VertexArrayDescriptor 3 Float (fromIntegral vertexSize)
-              (bufferOffset (sizeOf (0 :: GLfloat)))
+              (offsetPtr (sizeOf (0 :: GLfloat)))
             )
 
         -- drawTransformFeedback

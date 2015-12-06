@@ -20,7 +20,6 @@ import           Graphics.Rendering.OpenGL
 
 import           Hogldev.Texture
 import           Hogldev.Vertex (TNVertex(..))
-import           Hogldev.Utils (bufferOffset)
 
 data MeshEntry = MeshEntry
   { vb            :: !BufferObject
@@ -146,17 +145,17 @@ renderMesh Mesh{..} = do
         vertexAttribPointer vPosition $=
             ( ToFloat
             , VertexArrayDescriptor 3 Float (fromIntegral vertexSize)
-              (bufferOffset 0)
+              offset0
             )
         vertexAttribPointer vTextCoord $=
             ( ToFloat
             , VertexArrayDescriptor 2 Float (fromIntegral vertexSize)
-              (bufferOffset (sizeOf (Vertex3 0 0 0 :: Vertex3 GLfloat)))
+              (offsetPtr (sizeOf (Vertex3 0 0 0 :: Vertex3 GLfloat)))
             )
         vertexAttribPointer vNormals $=
             ( ToFloat
             , VertexArrayDescriptor 3 Float (fromIntegral vertexSize)
-              (bufferOffset (
+              (offsetPtr (
                   sizeOf (Vertex3 0 0 0 :: Vertex3 GLfloat)
                 + sizeOf (TexCoord2 0 0 :: TexCoord2 GLfloat))
               )

@@ -1,7 +1,6 @@
 module Hogldev.Utils (
     toRadian
   , toDegree
-  , bufferOffset
   , PersProj(..)
   , normalizeVector
   , normalizeVertex
@@ -12,9 +11,6 @@ module Hogldev.Utils (
 import           Graphics.Rendering.OpenGL hiding (rotate)
 import           Foreign.Ptr
 import           Linear (Quaternion(..), V3(..), rotate)
-
-bufferOffset :: Integral a => a -> Ptr b
-bufferOffset = plusPtr nullPtr . fromIntegral
 
 instance (Num a) => Num (Vertex3 a) where
   (+) (Vertex3 x1 y1 z1) (Vertex3 x2 y2 z2) =

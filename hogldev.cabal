@@ -52,6 +52,7 @@ executable tutorial02
                      , GLUT
                      , OpenGL
                      , hogldev
+                     , GLUtil
   hs-source-dirs:      tutorial02/
   default-language:    Haskell2010
   ghc-options:         -Wall
@@ -62,6 +63,7 @@ executable tutorial03
                      , GLUT
                      , OpenGL
                      , hogldev
+                     , GLUtil
   hs-source-dirs:      tutorial03/
   default-language:    Haskell2010
   ghc-options:         -Wall
@@ -72,6 +74,7 @@ executable tutorial04
                      , GLUT
                      , OpenGL
                      , hogldev
+                     , GLUtil
   hs-source-dirs:      tutorial04/
   default-language:    Haskell2010
   ghc-options:         -Wall
@@ -82,6 +85,7 @@ executable tutorial05
                      , GLUT
                      , OpenGL
                      , hogldev
+                     , GLUtil
   hs-source-dirs:      tutorial05/
   default-language:    Haskell2010
   ghc-options:         -Wall

@@ -1,13 +1,12 @@
 module Main where
 
+import           Graphics.GLUtil (offset0)
 import           Control.Monad (unless)
 import           Graphics.Rendering.OpenGL
 import           Graphics.UI.GLUT hiding (exit)
 import           Foreign.Marshal.Array (withArray)
 import           Foreign.Storable (sizeOf)
 import           System.Exit (exitFailure)
-
-import           Hogldev.Utils (bufferOffset)
 
 main :: IO ()
 main = do
@@ -89,7 +88,7 @@ renderSceneCB vbo = do
     vertexAttribArray vPosition $= Enabled
     bindBuffer ArrayBuffer $= Just vbo
     vertexAttribPointer vPosition $=
-        (ToFloat, VertexArrayDescriptor 3 Float 0 (bufferOffset 0))
+        (ToFloat, VertexArrayDescriptor 3 Float 0 offset0)
 
     drawArrays Triangles 0 3
 

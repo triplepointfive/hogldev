@@ -9,7 +9,7 @@ import           Foreign.Storable (sizeOf)
 import           System.Exit (exitFailure)
 
 import           Hogldev.Pipeline (Pipeline(..), getTrans)
-import           Hogldev.Utils (PersProj(..), bufferOffset)
+import           Hogldev.Utils (PersProj(..))
 
 windowWidth, windowHeight :: GLsizei
 windowWidth = 1024
@@ -148,7 +148,7 @@ renderSceneCB vbo ibo gWorldLocation gScale = do
     vertexAttribArray vPosition $= Enabled
     bindBuffer ArrayBuffer $= Just vbo
     vertexAttribPointer vPosition $=
-        (ToFloat, VertexArrayDescriptor 3 Float 0 (bufferOffset (0 :: Integer)))
+        (ToFloat, VertexArrayDescriptor 3 Float 0 offset0)
     bindBuffer ElementArrayBuffer $= Just ibo
 
     drawIndexedTris 4
